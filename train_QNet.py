@@ -6,18 +6,12 @@ from torch import optim
 from tqdm import tqdm as _tqdm
 import random
 
-eps_iterations = 200
-final_eps = 0.05
-
 
 def tqdm(*args, **kwargs):
     return _tqdm(*args, **kwargs, mininterval=1)  # Safety, do not overflow buffer
 
 
-def get_epsilon(it):
-    return 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
-
-
+#@profile
 def select_action(model, state, epsilon):
     with torch.no_grad():
         actions = model(torch.FloatTensor(state))
@@ -29,13 +23,13 @@ def select_action(model, state, epsilon):
                         ])
     return action[0]
 
-
+#@profile
 def compute_q_val(model, state, action):
     actions = model(torch.FloatTensor(state))
     #     print(actions)
     return actions[range(len(state)), action]
 
-
+#@profile
 def compute_target(model, reward, next_state, done, discount_factor):
     # done is a boolean (vector) that indicates if next_state is terminal (episode is done)
     # YOUR CODE HERE
@@ -48,8 +42,8 @@ def compute_target(model, reward, next_state, done, discount_factor):
 #################################################################
 ###################### TRAIN FUNCTIONS  #########################
 #################################################################
-
-def train(model, memory, optimizer, batch_size, discount_factor):
+#@profile
+def train_QNet(model, memory, optimizer, batch_size, discount_factor):
     # DO NOT MODIFY THIS FUNCTION
 
     # don't learn without some decent experience
@@ -87,9 +81,10 @@ def train(model, memory, optimizer, batch_size, discount_factor):
 
 
 
-
-
-def train_true_gradient(model, memory, optimizer, batch_size, discount_factor):
+j = 0
+#@profile
+def train_QNet_true_gradient(model, memory, optimizer, batch_size, discount_factor,
+                             target_model=None):
     # don't learn without some decent experience
     if len(memory) < batch_size:
         return None
@@ -111,7 +106,8 @@ def train_true_gradient(model, memory, optimizer, batch_size, discount_factor):
     q_val = compute_q_val(model, state, action)
 
     #     with torch.no_grad():  # Don't compute gradient info for the target (semi-gradient)
-    target = compute_target(model, reward, next_state, done, discount_factor)
+    target_model = model if target_model is None else target_model
+    target = compute_target(target_model, reward, next_state, done, discount_factor)
 
     # loss is measured from error between current and newly expected Q values
 
