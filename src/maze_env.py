@@ -20,7 +20,7 @@ def build_maze(width=81, height=51, complexity=.75, density=.75):
     shape = ((height // 2) * 2 + 1, (width // 2) * 2 + 1)
     # Adjust complexity and density relative to maze size
     complexity = int(complexity * (5 * (shape[0] + shape[1]))) # number of components
-    density    = int(density * ((shape[0] // 2) * (shape[1] // 2))) # size of components
+    density = int(density * ((shape[0] // 2) * (shape[1] // 2))) # size of components
     # Build actual maze
     Z = numpy.zeros(shape, dtype=int)
     # Fill borders
@@ -79,11 +79,13 @@ class MazeEnv(Env):
 
     metadata = {'render.modes': ['human', 'ansi']}
 
-    def __init__(self, shape=[10, 10], complexity=COMPLEXITY, density=DENSITY):
+    def __init__(self, shape=[20, 20], complexity=COMPLEXITY, density=DENSITY, seed=42):
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
             raise ValueError('shape argument must be a list/tuple of length 2')
-
-
+        
+        self.seed = seed
+        np.random.seed(self.seed)
+        
         self.maze = build_maze(shape[0], shape[1], complexity=complexity, density=density)
         
         shape = self.maze.shape
@@ -112,7 +114,6 @@ class MazeEnv(Env):
         self.lastaction = None
         
         if hasattr(self, "_rendered_maze") and self._rendered_maze is not None:
-            # self._rendered_maze.close()
             plt.close()
         
         self._rendered_maze = None
@@ -143,6 +144,7 @@ class MazeEnv(Env):
         return self.s, r, d, {}
 
     def render(self, mode='human', close=False):
+        
         if close:
             return
         
