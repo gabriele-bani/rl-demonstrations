@@ -7,20 +7,23 @@ import random
 from train_QNet import select_action
 import gym
 
+import utils
+
 ###
 ### the functions in this file have the only purpose of visualization
 ###
 frame_time = 0.005
-dir_path = os.path.dirname(os.path.realpath(__file__))
 
-def play_episodes(env, model, n=20, seed=42):
+
+def play_episodes(env, model, n=20, seed=42, render=True):
     episode_durations = []
     for i in range(n):
         env.seed(seed + i)
         state = env.reset()
-
-        env.render()
-        time.sleep(frame_time)
+        
+        if render:
+            env.render()
+            time.sleep(frame_time)
 
         done = False
         steps = 0
@@ -33,8 +36,9 @@ def play_episodes(env, model, n=20, seed=42):
                 action = select_action(model, state, epsilon=0)
             state, reward, done, _ = env.step(action)
 
-            env.render()
-            time.sleep(frame_time)
+            if render:
+                env.render()
+                time.sleep(frame_time)
 
         episode_durations.append(steps)
         env.close()
@@ -66,7 +70,7 @@ def play_trajectory(env, trajectory, seed=42):
         action = trajectory[j][1]
         state, reward, done, _ = env.step(action)
 
-        if np.mean(np.abs(state - trajectory[j][3])) > 1e-8:
+        if np.mean(np.abs(state - trajectory[j][3])) > 1e-15:
             print(state, trajectory[j][3])
             print("the trajectory and the simulation do not match! watch the seeds!")
             raise ValueError
@@ -83,18 +87,25 @@ if __name__ == "__main__":
 
     env_name = "MountainCar-v0"
 
-    dir = f"{dir_path}/../data/{env_name}"
+    dir = utils.build_data_dir(env_name)
 
-    model = torch.load(f"{dir}/weights.pt")
-    d = torch.load(f"{dir}/results.pkl")
-    trajectories = torch.load(f"{dir}/trajectories.pkl")
+    model = utils.load_model(env_name)
+    trajectories = utils.load_trajectories(env_name)
+    d = utils.load_results(env_name)
 
-    env = gym.envs.make(env_name)
-
+    env = utils.create_env(env_name)
+    
+    # TODO - FIX IN CASE OF MAZE, DEPENDING ON HOW WE IMPLEMENT THE MODEL
     print("start playing episodes with the trained model")
     play_episodes(env, model, 3)
-
+    
+    c = 0
     print("start replaying trajectories")
-    for i in range(5):
+    for i, row in trajectories.iloc[::-1].iterrows():
         print("replaying trajectory", -i)
-        play_trajectory(env, trajectories[-i][0], seed=trajectories[-i][1], )
+        
+        play_trajectory(env, row["trajectory"], seed=row["seed"])
+        
+        c+=1
+        if c > 5:
+            break

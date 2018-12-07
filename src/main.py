@@ -15,6 +15,8 @@ import random
 import gym
 from replay import play_episodes, play_trajectory
 
+import utils
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 env_name = "MountainCar-v0"
 # name = "LunarLander-v2"
@@ -43,7 +45,7 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 200
+num_episodes = 500
 discount_factor = 0.99
 
 eps_iterations = 100
@@ -73,28 +75,26 @@ def smooth(x, N):
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 
-fig, axes = plt.subplots(nrows=2, ncols=2)
-coordinates = [(0, 0), (0, 1), (1, 0), (1, 1)]
-values = [rewards, disc_rewards, episode_durations, losses]
 # only needed for cartpole, due to memory replay we might miss the losses of the first few episodes
 losses[losses == None] = 0
 
-names = ["rewards", "discounted rewards", "episode durations", "loss"]
+d = {"rewards": rewards,
+     "discounted rewards": disc_rewards,
+     "episode durations": episode_durations,
+     "loss": losses}
 
-d = {k: lst for (k, lst) in zip(names, values)}
+dir = utils.build_data_dir(env_name)
 
-dir = f"{dir_path}/../data/{env_name}"
-if not os.path.exists(dir):
-    os.makedirs(dir)
-    
-torch.save(model, f"{dir}/weights.pt")
-torch.save(d, f"{dir}/results.pkl")
-torch.save(trajectories, f"{dir}/trajectories.pkl")
+utils.store_results(env_name, d)
+utils.store_model(env_name, model)
+utils.store_trajectories(env_name, trajectories, None, discount_factor)
 
-for i, (c, l) in enumerate(zip(coordinates, values)):
-    print(i, names[i], c, l)
-    axes[c].plot(smooth(l, 20))
-    axes[c].set_title(names[i])
+fig, axes = plt.subplots(nrows=2, ncols=2)
+for i, (n, l) in enumerate(d.items()):
+    print(i, n, l)
+    y, x = i // 2, i % 2
+    axes[y, x].plot(smooth(l, 20))
+    axes[y, x].set_title(n)
 plt.show()
 
 
@@ -109,4 +109,4 @@ play_episodes(env, model, 3)
 print("start replaying trajectories")
 for i in range(5):
     print("replaying trajectory", -i)
-    play_trajectory(env, trajectories[-i][0], seed=trajectories[-i][1], )
+    play_trajectory(env, trajectories[-i][0], seed=trajectories[-i][1])

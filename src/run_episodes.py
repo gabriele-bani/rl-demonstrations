@@ -28,8 +28,7 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
     trajectories = []
     # ys = []
     # xs = []
-
-
+    
     for i in tqdm(range(num_episodes)):
         duration = 0
         reward = 0
