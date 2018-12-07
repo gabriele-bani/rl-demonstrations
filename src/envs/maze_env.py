@@ -11,8 +11,8 @@ import random
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap as cmap
 
-COMPLEXITY = 1
-DENSITY = 1
+COMPLEXITY = 1.
+DENSITY = 1.
 
 
 def build_maze(width=81, height=51, complexity=.75, density=.75, seed=42):
@@ -62,6 +62,12 @@ RIGHT = 1
 DOWN = 2
 LEFT = 3
 
+# ACTIONS = [
+#     np.array([-1, 0]),    # UP
+#     np.array([0, 1]),     # RIGHT
+#     np.array([1, 0]),     # DOWN
+#     np.array([0, -1]),    # LEFT
+# ]
 ACTIONS = [
     (-1, 0),    # UP
     (0, 1),     # RIGHT
@@ -96,6 +102,7 @@ class MazeEnv(Env):
         
         self.nS = np.prod(shape)
         self.nA = 4
+        self.ACTIONS = ACTIONS
 
         self.maze = build_maze(self.shape[0],
                                self.shape[1],
@@ -122,14 +129,14 @@ class MazeEnv(Env):
     #     return self._rndseed
     
     def get_params(self):
-        return (self.shape[0],
-                self.shape[1],
+        return (self.shape[0]//2,
+                self.shape[1]//2,
                 self._maze_seed,
-                self.complexity,
-                self.density)
+                float(self.complexity),
+                float(self.density))
     
     def get_name(self):
-        return "Maze_({},{},{},{},{})".format(self.get_params())
+        return "Maze_({},{},{},{},{})".format(*self.get_params())
     
     def reset(self):
         
@@ -145,12 +152,12 @@ class MazeEnv(Env):
         self.s = self.start
         self.lastaction = None
         
-        if hasattr(self, "_rendered_maze") and self._rendered_maze is not None:
-            plt.close()
+        if self._rendered_maze is not None:
+            plt.close(self._rendered_maze[0])
         
         self._rendered_maze = None
         
-        self.render()
+        # self.render()
         
         return self.s
 
@@ -160,9 +167,10 @@ class MazeEnv(Env):
         if self.s == self.end:
             return self.s, 0, True, {}
         
-        dy, dx = ACTIONS[a]
+        # print("action", a)
+        dy, dx = self.ACTIONS[a]
         y, x = self.s
-        
+
         x += dx
         y += dy
         
@@ -175,7 +183,7 @@ class MazeEnv(Env):
         
         r = 0 if d else -1
         
-        return self.s, r, d, {}
+        return np.array(self.s), r, d, {}
 
     def render(self, mode='human', close=False):
         
@@ -189,14 +197,14 @@ class MazeEnv(Env):
             maze[self.s] = 4
             
             if self._rendered_maze is None:
-                _, self._rendered_maze = plt.subplots(1, figsize=(10, 5))
+                self._rendered_maze = plt.subplots(1, figsize=(10, 5))
 
-            self._rendered_maze.cla()
-            self._rendered_maze.imshow(maze, cmap=colormap, interpolation='nearest')
-            plt.xticks([])
-            plt.yticks([])
-            plt.draw()
-            plt.show()
+            self._rendered_maze[1].cla()
+            self._rendered_maze[1].imshow(maze, cmap=colormap, interpolation='nearest')
+            self._rendered_maze[1].set_xticks([])
+            self._rendered_maze[1].set_yticks([])
+            self._rendered_maze[0].canvas.draw_idle()
+            self._rendered_maze[0].show()
             plt.pause(0.01)
         else:
 

@@ -18,12 +18,17 @@ DIRPATH = os.path.dirname(os.path.realpath(__file__))
 DATADIR = f"{DIRPATH}/../data/"
 
 
-def create_env(name):
-    params = maze_parser.fullmatch(name)
+def create_env(name, *args, **kwargs):
     
-    if params is not None:
-        env = envs.MazeEnv(*params)
-        assert env.get_name() == name, "Error! The parameters and the name of the environment given don't match!"
+    match = maze_parser.fullmatch(name)
+    
+    if name == "Maze":
+        env = envs.MazeEnv(*args, **kwargs)
+        return env
+    elif match is not None:
+        params = match.groups()
+        env = envs.MazeEnv(int(params[0]), int(params[1]), int(params[2]), float(params[3]), float(params[4]))
+        assert env.get_name() == name, "Error! The name generated doesn't match the name given: {} != {}".format(env.get_name(), name)
         return env
     else:
         return gym.envs.make(name)
@@ -132,7 +137,7 @@ def store_trajectories(env_name, trajectories, env_params, discount, **kwargs):
     
     id = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
     
-    outfile = os.path.join(outdir, "trajectories_({})".format(id))
+    outfile = os.path.join(outdir, "trajectories_({}).pkl".format(id))
     df.to_pickle(outfile)
 
 
@@ -141,13 +146,13 @@ def load_trajectories(env_name, date=None):
     if date is None:
         
         dir = build_data_dir(env_name)
-        files = glob.glob(os.path.join(dir, "trajectories_(*)"))
+        files = glob.glob(os.path.join(dir, "trajectories_(*).pkl"))
         
         # pick the most recent one
         files = sorted(files)
         filename = files[-1]
     else:
-        filename = os.path.join(dir, "trajectories_({})".format(date))
+        filename = os.path.join(dir, "trajectories_({}).pkl".format(date))
     
     df = pd.read_pickle(filename)
     

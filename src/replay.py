@@ -86,14 +86,17 @@ def play_trajectory(env, trajectory, seed=42):
 if __name__ == "__main__":
 
     env_name = "MountainCar-v0"
-
-    dir = utils.build_data_dir(env_name)
+    
+    
+    # env_name = "Maze_(15,15,42,1.0,1.0)"
+    
+    env = utils.create_env(env_name)
 
     model = utils.load_model(env_name)
     trajectories = utils.load_trajectories(env_name)
     d = utils.load_results(env_name)
 
-    env = utils.create_env(env_name)
+    
     
     # TODO - FIX IN CASE OF MAZE, DEPENDING ON HOW WE IMPLEMENT THE MODEL
     print("start playing episodes with the trained model")
