@@ -38,37 +38,62 @@ def build_data_dir(env_name):
 
 def store_model(env_name, model):
     dir = build_data_dir(env_name)
-    file = f"{dir}/model.pt"
+    id = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    file = os.path.join(dir, "model_({}).pt".format(id))
+    
     torch.save(model, file)
     return file
 
 
-def load_model(env_name):
+def load_model(env_name, date=None):
+    
     dir = build_data_dir(env_name)
-    file = f"{dir}/model.pt"
-    model = torch.load(file)
+    
+    if date is None:
+        
+        dir = build_data_dir(env_name)
+        files = glob.glob(os.path.join(dir, "model_(*).pt"))
+        
+        # pick the most recent one
+        files = sorted(files)
+        filename = files[-1]
+    else:
+        filename = os.path.join(dir, "model_({}).pt".format(date))
+    
+    model = torch.load(filename)
     return model
 
 
 def store_results(env_name, results):
     dir = build_data_dir(env_name)
-    file = f"{dir}/results.pkl"
+    id = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    file = os.path.join(dir, "results_({}).pkl".format(id))
+
     torch.save(results, file)
     return file
 
 
-def load_results(env_name):
+def load_results(env_name, date=None):
+    
     dir = build_data_dir(env_name)
-    file = f"{dir}/results.pkl"
-    results = torch.load(file)
+    
+    if date is None:
+        
+        dir = build_data_dir(env_name)
+        files = glob.glob(os.path.join(dir, "results_(*).pkl"))
+        
+        # pick the most recent one
+        files = sorted(files)
+        filename = files[-1]
+    else:
+        filename = os.path.join(dir, "results_({}).pkl".format(date))
+        
+    results = torch.load(filename)
     return results
 
 
 def trajetory_to_dataframe(env_name, trajectories, env_params, discount, **kwargs):
     dataframe = []
-    
-    if env_params == None:
-        env_params = {}
     
     for i, trajectory_tuple in enumerate(trajectories):
         trajectory, seed = trajectory_tuple
@@ -111,16 +136,18 @@ def store_trajectories(env_name, trajectories, env_params, discount, **kwargs):
     df.to_pickle(outfile)
 
 
-def load_trajectories(env_name, filename=None):
+def load_trajectories(env_name, date=None):
     
-    if filename is None:
+    if date is None:
         
         dir = build_data_dir(env_name)
-        files = glob.glob(os.path.join(dir, "trajectories_*"))
+        files = glob.glob(os.path.join(dir, "trajectories_(*)"))
         
         # pick the most recent one
         files = sorted(files)
         filename = files[-1]
+    else:
+        filename = os.path.join(dir, "trajectories_({})".format(date))
     
     df = pd.read_pickle(filename)
     

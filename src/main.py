@@ -17,10 +17,10 @@ from replay import play_episodes, play_trajectory
 
 import utils
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-env_name = "MountainCar-v0"
-# name = "LunarLander-v2"
-# name = "CartPole-v0"
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# env_name = "MountainCar-v0"
+# env_name = "LunarLander-v2"
+env_name = "CartPole-v0"
 
 env = gym.envs.make(env_name)
 
@@ -45,7 +45,7 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 500
+num_episodes = 250
 discount_factor = 0.99
 
 eps_iterations = 100
@@ -76,14 +76,14 @@ def smooth(x, N):
 
 
 # only needed for cartpole, due to memory replay we might miss the losses of the first few episodes
-losses[losses == None] = 0
+losses = [l if l is not None else 0. for l in losses]
 
 d = {"rewards": rewards,
      "discounted rewards": disc_rewards,
      "episode durations": episode_durations,
      "loss": losses}
 
-dir = utils.build_data_dir(env_name)
+# dir = utils.build_data_dir(env_name)
 
 utils.store_results(env_name, d)
 utils.store_model(env_name, model)
