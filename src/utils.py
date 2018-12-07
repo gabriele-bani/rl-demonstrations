@@ -152,3 +152,9 @@ def load_trajectories(env_name, date=None):
     df = pd.read_pickle(filename)
     
     return df
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]

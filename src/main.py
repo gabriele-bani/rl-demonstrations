@@ -14,6 +14,7 @@ from QNetwork import QNetwork
 import random
 import gym
 from replay import play_episodes, play_trajectory
+from backward_train import backward_train, repeat_trajectory
 
 import utils
 
@@ -100,7 +101,7 @@ plt.show()
 
 # play some episodes to test
 print("start playing episodes with the trained model")
-play_episodes(env, model, 3)
+play_episodes(env, model, 3, render=render)
 
 
 # play the first 20 trajectories.
@@ -109,4 +110,23 @@ play_episodes(env, model, 3)
 print("start replaying trajectories")
 for i in range(5):
     print("replaying trajectory", -i)
-    play_trajectory(env, trajectories[-i][0], seed=trajectories[-i][1])
+    play_trajectory(env, trajectories[-i][0],
+                    seed=trajectories[-i][1], render=render)
+
+backward_train(train=train_QNet_true_gradient, 
+               model=model, 
+               memory=memory, 
+               trajectory=trajectories[-i][0], 
+               seed=trajectories[-i][1], 
+               env_name=env_name, 
+               stop_coeff=1.0, 
+               smoothing_num=1,
+               num_splits=5, 
+               num_samples=5, 
+               max_num_episodes=num_episodes, 
+               batch_size=batch_size, 
+               discount_factor=discount_factor, 
+               learn_rate=learn_rate,
+               get_epsilon=get_epsilon, 
+               use_target_qnet=None, 
+               render=render)

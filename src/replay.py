@@ -49,7 +49,7 @@ def play_episodes(env, model, n=20, seed=42, render=True):
 
 
 # trajectories are in the form [(s, a, r, s'), ...]
-def play_trajectory(env, trajectory, seed=42):
+def play_trajectory(env, trajectory, seed=42, render=True):
     episode_durations = []
 
     random.seed(seed)
@@ -58,7 +58,8 @@ def play_trajectory(env, trajectory, seed=42):
     state = env.reset()
     j = 0
 
-    env.render()
+    if render:
+        env.render()
     time.sleep(frame_time)
 
     done = False
@@ -74,8 +75,6 @@ def play_trajectory(env, trajectory, seed=42):
             print(state, trajectory[j][3])
             print("the trajectory and the simulation do not match! watch the seeds!")
             raise ValueError
-
-        env.render()
         time.sleep(frame_time)
         j += 1
 
