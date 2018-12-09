@@ -4,17 +4,113 @@ from replay import play_trajectory
 import utils
 import random
 
+from itertools import product
+
 
 ROWS = 15
 COLS = 15
-SEED = 42
+SEED = 1024
 COMPLEXITY = 1
 DENSITY = 1
 
 discount_fact = 1.
 
 
+def solve_maze_complete(maze_env):
+    
+    # run Floyd-Warshall algorithm to find the shortest paths between every pair of nodes
+    maze = maze_env.maze
+    
+    R, C = maze.shape
+    
+    # initialize the distance to an high upperbound
+    distance = R*C*np.ones((R, C, R, C), dtype=int)
+    
+    # build the matrix storing the optimal policy
+    policy = -1*np.ones((R, C, R, C), dtype=int)
+    
+    for c in product(range(0, R), range(0, C)):
+        if maze[c] != 1:
+            distance[c + c] = 0
+            policy[c + c] = -1
+            
+            # the end of the maze does not have any outgoing edge
+            if c != maze_env.end:
+                for a, (dy, dx) in enumerate(maze_env.ACTIONS):
+                    # neighbor cell
+                    n = c[0] + dy, c[1] + dx
+                    if maze[n] != 1:
+                        distance[c + n] = 1
+                        policy[c + n] = a
+    
+    for k in product(range(0, R), range(0, C)):
+        print(k[0], "/", R)
+        if not maze[k]:
+            for i in product(range(0, R), range(0, C)):
+                if not maze[i]:
+                    for j in product(range(0, R), range(0, C)):
+                        if not maze[j]:
+                            if distance[i + j] > distance[i + k] + distance[k + j]:
+                                distance[i + j] = distance[i + k] + distance[k + j]
+                                policy[i + j] = policy[i + k]
+    
+    return -1*distance, policy
+
+
+def suboptimal_trajectory(maze_env, values, policy, percentile=0.8, render=False):
+    
+    maze = maze_env.maze
+    
+    R, C = maze.shape
+    
+    start = maze_env.start
+    end = maze_env.end
+    
+    distances = []
+
+    for m in product(range(0, R), range(0, C)):
+        if m != start and m != end and not maze[m]:
+            walls = 0
+            for dy, dx in maze_env.ACTIONS:
+                walls += maze[m[0]+dy, m[1]+dx]
+            # sample only nodes on a crossing
+            if walls < 2:
+                distances.append((values[start + m] + values[m + end], m))
+    
+    distances = sorted(distances, key=lambda x: x[0])
+    
+    p = max(0, min(len(distances)-1, int(percentile*len(distances))))
+    
+    distances = distances[p:]
+    
+    distance, middle_node = random.choice(distances)
+    
+    print("Sub-optimal return: {}/{}".format(distance, values[start + end]))
+    print("Middle Node:", middle_node)
+    trajectory = []
+    s = maze_env.reset()
+    done = False
+
+    while not done and s != middle_node:
+        a = policy[s + middle_node]
+        new_s, r, done, _ = maze_env.step(a)
+        if render:
+            maze_env.render("plot")
+        trajectory.append((s, a, r, new_s, done))
+        s = new_s
+
+    while not done:
+        a = policy[s + end]
+        new_s, r, done, _ = maze_env.step(a)
+        if render:
+            maze_env.render("plot")
+        trajectory.append((s, a, r, new_s, done))
+        s = new_s
+        
+    return trajectory, done
+
 def solve_maze(maze_env):
+    # computes shortest paths from every cell to the end of the maze
     
     maze = maze_env.maze
     
@@ -49,8 +145,7 @@ def solve_maze(maze_env):
                     policy[n] = a
                     queue.append(n)
     
-    return distance, policy
-
+    return -1*distance, policy
 
 def epsilon_greedy_trajectory(maze_env, policy, epsilon=0.1, max_steps=None, render=False):
     
@@ -90,13 +185,15 @@ env = utils.create_env("Maze", ROWS, COLS, SEED, COMPLEXITY, DENSITY)
 env_name = env.get_name()
 
 
-distances, policy = solve_maze(env)
+# distances, policy = solve_maze(env)
+distances, policy = solve_maze_complete(env)
 
 print("Solved!")
 
 # A few tests
-for i in range(2):
-    epsilon_greedy_trajectory(env, policy, epsilon=i * 0.1, render=True)
+for i in range(8):
+    # epsilon_greedy_trajectory(env, policy, epsilon=i * 0.1, render=True)
+    suboptimal_trajectory(env, distances, policy, percentile=1 - i * 0.1, render=True)
 
 
 # Computing trajectories
@@ -106,9 +203,10 @@ episode_durations = []
 rewards = []
 disc_rewards = []
 
+
 for i in range(150):
-    trajectory, done = epsilon_greedy_trajectory(env, policy, epsilon=0.9**i, render=False)
-    
+    # trajectory, done = epsilon_greedy_trajectory(env, policy, epsilon=0.9**i, render=False)
+    trajectory, done = suboptimal_trajectory(env, distances, policy, percentile=0.95**i, render=False)
     if done:
         trajectories.append((trajectory, SEED))
         
@@ -127,12 +225,11 @@ utils.store_results(env_name, d)
 utils.store_model(env_name, policy)
 utils.store_trajectories(env_name, trajectories, None, 1.)
 
-fig, axes = plt.subplots(nrows=2, ncols=2)
+fig, axes = plt.subplots(nrows=1, ncols=3)
 for i, (n, l) in enumerate(d.items()):
     print(i, n, l)
-    y, x = i // 2, i % 2
-    axes[y, x].plot(smooth(l, 1))
-    axes[y, x].set_title(n)
+    axes[i].plot(smooth(l, 1))
+    axes[i].set_title(n)
 plt.show()
 
 

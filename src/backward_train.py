@@ -9,13 +9,13 @@ from tqdm import tqdm as _tqdm
 import random
 from train_QNet import *
 import copy
-from utils import chunks
+import utils
 
 
 def repeat_trajectory(trajectory, seed, env_name):
     # Note that step is from the end
 
-    env = gym.envs.make(env_name)
+    env = utils.create_env(env_name)
 
     random.seed(seed)
     torch.manual_seed(seed)
@@ -67,7 +67,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
     trajectories = []
 
     num_obs = list(range(len(trajectory)))
-    splits = chunks(num_obs, len(num_obs)//num_splits)
+    splits = utils.chunks(num_obs, len(num_obs)//num_splits)
     starting_state_idxs = []
 
     for split in splits:

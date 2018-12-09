@@ -183,7 +183,7 @@ class MazeEnv(Env):
         
         r = 0 if d else -1
         
-        return np.array(self.s), r, d, {}
+        return self.s, r, d, {}
 
     def render(self, mode='human', close=False):
         

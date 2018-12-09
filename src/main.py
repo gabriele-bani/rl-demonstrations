@@ -84,8 +84,6 @@ d = {"rewards": rewards,
      "episode durations": episode_durations,
      "loss": losses}
 
-# dir = utils.build_data_dir(env_name)
-
 utils.store_results(env_name, d)
 utils.store_model(env_name, model)
 utils.store_trajectories(env_name, trajectories, None, discount_factor)
@@ -116,8 +114,8 @@ for i in range(5):
 backward_train(train=train_QNet_true_gradient, 
                model=model, 
                memory=memory, 
-               trajectory=trajectories[-i][0], 
-               seed=trajectories[-i][1], 
+               trajectory=trajectories[-1][0],
+               seed=trajectories[-1][1],
                env_name=env_name, 
                stop_coeff=1.0, 
                smoothing_num=1,

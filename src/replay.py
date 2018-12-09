@@ -71,7 +71,7 @@ def play_trajectory(env, trajectory, seed=42, render=True):
         action = trajectory[j][1]
         state, reward, done, _ = env.step(action)
 
-        if np.mean(np.abs(state - trajectory[j][3])) > 1e-15:
+        if np.mean(np.abs(np.array(state) - np.array(trajectory[j][3]))) > 1e-15:
             print(state, trajectory[j][3])
             print("the trajectory and the simulation do not match! watch the seeds!")
             raise ValueError
@@ -86,16 +86,13 @@ if __name__ == "__main__":
 
     env_name = "MountainCar-v0"
     
-    
     # env_name = "Maze_(15,15,42,1.0,1.0)"
     
     env = utils.create_env(env_name)
-
+    
     model = utils.load_model(env_name)
     trajectories = utils.load_trajectories(env_name)
     d = utils.load_results(env_name)
-
-    
     
     # TODO - FIX IN CASE OF MAZE, DEPENDING ON HOW WE IMPLEMENT THE MODEL
     print("start playing episodes with the trained model")
@@ -108,6 +105,6 @@ if __name__ == "__main__":
         
         play_trajectory(env, row["trajectory"], seed=row["seed"])
         
-        c+=1
+        c += 1
         if c > 5:
             break
