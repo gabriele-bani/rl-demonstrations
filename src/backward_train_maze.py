@@ -174,6 +174,8 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             dr = episode_return - real_returns[starting_state_idx]
             victory = dr >= -0.1 * abs(real_returns[starting_state_idx])
             # victory = int(episode_return > real_returns[starting_state_idx])
+            # TODO look at the plots... suboptimal and bad do better than the baseline easily, so they go to the
+            # TODO next split even if the learned policy is still very bad!
             victories.append(victory)
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
@@ -224,7 +226,7 @@ def train_maze(seed, env_name, max_num_episodes, discount_factor,
     assert seed == int(seed)
     seed = int(seed)
     random.seed(seed)
-    env.seed(seed)
+    # env.seed(seed)  # results in: WARN: Could not seed environment <MazeEnv instance>
     
     if Q is None:
         Q = defaultdict(lambda: np.zeros(n_actions))

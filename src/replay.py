@@ -32,7 +32,7 @@ def play_episodes(env, model, n=20, seed=42, render=True, maze=False, plotting=T
         done = False
         steps = 0
 
-        while not done:
+        while not done and steps < 1000:
             steps += 1
 
             with torch.no_grad():

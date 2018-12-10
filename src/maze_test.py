@@ -44,6 +44,19 @@ final_eps = 0.05
 def get_epsilon(it):
     return 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
 
+def generate_plots():
+    plt.figure()
+    plt.ylim((0, 500))
+    plt.plot(smooth(episode_durations, smooth_factor), label="trained with optimal traj", alpha=0.5)
+    plt.plot(smooth(episode_durations_scratch, smooth_factor), label="trained from scratch", alpha=0.5)
+    plt.plot(smooth(episode_durations_bad, smooth_factor), label="trained with bad traj", alpha=0.5)
+    plt.plot(smooth(episode_durations_suboptimal, smooth_factor), label="trained with suboptimal traj", alpha=0.5)
+    plt.legend()
+    plt.title('Episode durations')
+    # plt.show()
+    plt.savefig("./plot.png")
+    return
+
 
 random.seed(seed)
 # torch.manual_seed(seed)
@@ -118,24 +131,21 @@ Q_scratch, greedy_policy_scratch, episode_durations_scratch, returns_trends_scra
                                                                                 )
 
 
-print("Trained in", len(episode_durations), " episodes")
 
-print("Repeating the last training episode")
+# print("Repeating the last training episode")
 # play_trajectory(utils.create_env(env_name), trajectories[-1][0], seed=trajectories[-1][1], render=True)
 
-print("Testing the final greedy policy:")
+print("\nTesting the final greedy policy:")
+print("Optimal converged in ", len(episode_durations), "episodes")
 play_episodes(utils.create_env(env_name), greedy_policy, n=1, seed=trajectories[-1][1], render=False, maze=True, plotting=False)
+print("Suboptimal converged in ", len(episode_durations_suboptimal), "episodes")
+play_episodes(utils.create_env(env_name), greedy_policy_suboptimal, n=1, seed=trajectories[-1][1], render=False, maze=True, plotting=False)
+print("Bad converged in ", len(episode_durations_bad), "episodes")
+play_episodes(utils.create_env(env_name), greedy_policy_bad, n=1, seed=trajectories[-1][1], render=False, maze=True, plotting=False)
+print("Scratch converged in ", len(episode_durations_scratch), "episodes")
+play_episodes(utils.create_env(env_name), greedy_policy_scratch, n=1, seed=trajectories[-1][1], render=False, maze=True, plotting=False)
 
-smooth_factor = 3
-plt.figure()
-plt.ylim((0, 500))
-plt.plot(smooth(episode_durations, smooth_factor), label="trained with optimal traj", alpha=0.5)
-plt.plot(smooth(episode_durations_scratch, smooth_factor), label="trained from scratch", alpha=0.5)
-plt.plot(smooth(episode_durations_bad, smooth_factor), label="trained with bad traj", alpha=0.5)
-plt.plot(smooth(episode_durations_suboptimal, smooth_factor), label="trained with suboptimal traj", alpha=0.5)
-plt.legend()
-plt.title('Episode durations')
-# plt.show()
-plt.savefig("./plot.png")
+smooth_factor = 20 # TODO   notice the smoothing factor in the plots!
+generate_plots()
 
 # play_episodes(utils.create_env(env_name), greedy_policy, n=1, seed=trajectories[-1][1], render=True, maze=True, plotting=False)
