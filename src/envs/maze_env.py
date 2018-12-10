@@ -185,7 +185,7 @@ class MazeEnv(Env):
         
         return self.s, r, d, {}
 
-    def render(self, mode='human', close=False):
+    def render(self, mode='plot', close=False):
         
         if close:
             return

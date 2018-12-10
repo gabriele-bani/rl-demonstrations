@@ -15,7 +15,7 @@ import utils
 frame_time = 0.02
 
 
-def play_episodes(env, model, n=20, seed=42, render=True):
+def play_episodes(env, model, n=20, seed=42, render=True, maze=False):
     episode_durations = []
 
     assert seed == int(seed)
@@ -37,7 +37,10 @@ def play_episodes(env, model, n=20, seed=42, render=True):
 
             with torch.no_grad():
                 # action = bonus_get_action(state).item()
-                action = select_action(model, state, epsilon=0)
+                if maze:
+                    action = model(state)
+                else:
+                    action = select_action(model, state, epsilon=0)
             state, reward, done, _ = env.step(action)
 
             if render:
@@ -46,7 +49,8 @@ def play_episodes(env, model, n=20, seed=42, render=True):
 
         episode_durations.append(steps)
         env.close()
-
+        print("Episode duration:", steps)
+        
     plt.plot(episode_durations)
     plt.title('Episode durations')
     plt.show()
@@ -72,7 +76,7 @@ def play_trajectory(env, trajectory, seed=42, render=True):
     done = False
     steps = 0
 
-    while not done:
+    while not done and j < len(trajectory):
         steps += 1
 
         action = trajectory[j][1]
