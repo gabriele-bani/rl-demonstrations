@@ -97,7 +97,7 @@ def load_results(env_name, date=None):
     return results
 
 
-def trajetory_to_dataframe(env_name, trajectories, env_params, discount, **kwargs):
+def trajectory_to_dataframe(env_name, trajectories, env_params, discount, **kwargs):
     dataframe = []
     
     for i, trajectory_tuple in enumerate(trajectories):
@@ -130,29 +130,33 @@ def trajetory_to_dataframe(env_name, trajectories, env_params, discount, **kwarg
     return df
 
 
-def store_trajectories(env_name, trajectories, env_params, discount, **kwargs):
-    df = trajetory_to_dataframe(env_name, trajectories, env_params, discount, **kwargs)
+def store_trajectories(env_name, trajectories, env_params, discount, filename=None, **kwargs):
+    df = trajectory_to_dataframe(env_name, trajectories, env_params, discount, **kwargs)
     
     outdir = build_data_dir(env_name)
-    
-    id = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-    
-    outfile = os.path.join(outdir, "trajectories_({}).pkl".format(id))
+    if filename is None:
+        id = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        
+        outfile = os.path.join(outdir, "trajectories_({}).pkl".format(id))
+    else:
+        outfile = os.path.join(outdir, "{}.pkl".format(filename))
+
     df.to_pickle(outfile)
 
 
-def load_trajectories(env_name, date=None):
-    
-    if date is None:
-        
-        dir = build_data_dir(env_name)
+def load_trajectories(env_name, date=None, filename=None):
+    dir = build_data_dir(env_name)
+    if date is None and filename is None:
+
         files = glob.glob(os.path.join(dir, "trajectories_(*).pkl"))
         
         # pick the most recent one
         files = sorted(files)
         filename = files[-1]
-    else:
+    elif filename is None:
         filename = os.path.join(dir, "trajectories_({}).pkl".format(date))
+    else:
+        filename = os.path.join(dir, "{}.pkl".format(filename))
     
     df = pd.read_pickle(filename)
     

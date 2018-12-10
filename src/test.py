@@ -14,95 +14,127 @@ from QNetwork import QNetwork
 import random
 import gym
 from replay import play_episodes, play_trajectory
-from backward_train_maze import backward_train_maze, train_maze
+from backward_train import backward_train, repeat_trajectory
 
 import utils
 
-env_name = "Maze_(15,15,42,1.0,1.0)"
+env_name = "MountainCar-v0"
 
-# env = gym.envs.make(env_name)
-env = utils.create_env(env_name)
+env = gym.envs.make(env_name)
 
-# num_inputs = {
-#     "MountainCar-v0": 2,
-#     "LunarLander-v2": 8,
-#     "CartPole-v0": 4,
-# }
-#
-# num_outputs = {
-#     "MountainCar-v0": 3,
-#     "LunarLander-v2": 4,
-#     "CartPole-v0": 2,
-# }
-#
-# batch_size = 64
-# learn_rate = 1e-3
-# memory = ReplayMemory(2000)
-# num_hidden = 128
+num_inputs = {
+    "MountainCar-v0": 2,
+    "LunarLander-v2": 8,
+    "CartPole-v0": 4,
+}
+
+num_outputs = {
+    "MountainCar-v0": 3,
+    "LunarLander-v2": 4,
+    "CartPole-v0": 2,
+}
+
+batch_size = 64
+learn_rate = 1e-3
+memory = ReplayMemory(2000)
+num_hidden = 128
 seed = 34
-# use_target_qnet = False
-# # whether to visualize some episodes during training
+use_target_qnet = True
+# whether to visualize some episodes during training
 render = False
 
-num_episodes = 100
+num_episodes = 170
 discount_factor = 0.99
 
-eps_iterations = 100
+num_splits = 15
+smoothing_num = 20
+stop_coeff = 0.2
+
+eps_iterations = 10
+intial_eps = 1
 final_eps = 0.05
 
+alpha = np.power(final_eps/intial_eps, 1/eps_iterations)
+
 def get_epsilon(it):
-    return 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    # return intial_eps - it*((intial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    return intial_eps * alpha**it if it < eps_iterations else final_eps
 
 
 random.seed(seed)
-# torch.manual_seed(seed)
+torch.manual_seed(seed)
 env.seed(seed)
 
-# model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
 
 
-data = utils.load_trajectories(env_name)
+# data = utils.load_trajectories(env_name)
+data = utils.load_trajectories(env_name, filename="selected_trajectories")
 
-trajectory = data.iloc[-1]["trajectory"]
-# trajectory = data.iloc[data["sum_reward"].idxmax()]["trajectory"]
-seed = data.iloc[-1]["seed"]
+# data.sort_values(by="sum_reward", inplace=True)
+
+print(data.sum_reward)
+
+# row = data["sum_reward"].idxmax()
+row = 0
+
+print("Best Trajectory: {} with return {}".format(row, data.iloc[row].sum_reward))
+
+trajectory = data.iloc[row]["trajectory"]
+seed = data.iloc[row]["seed"]
 
 
-print("Replaying training trajectory")
-# play_trajectory(utils.create_env(env_name), trajectory, seed=seed, render=True)
+# print("Replaying training trajectory")
+# play_trajectory(env, trajectory, seed=seed, render=True)
 
 
 print("Starting Training")
-Q, greedy_policy, episode_durations, returns_trends, disc_rewards, trajectories = backward_train_maze(
+model, episode_durations, returns_trends, disc_rewards, losses, trajectories = backward_train(
+                                                                                       train=train_QNet_true_gradient,
+                                                                                       model=model,
+                                                                                       memory=memory,
                                                                                        trajectory=trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.2,
-                                                                                       smoothing_num=5,
-                                                                                       num_splits=10,
+                                                                                       stop_coeff=stop_coeff,
+                                                                                       smoothing_num=smoothing_num,
+                                                                                       num_splits=num_splits,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
+                                                                                       batch_size=batch_size,
                                                                                        discount_factor=discount_factor,
+                                                                                       learn_rate=learn_rate,
                                                                                        get_epsilon=get_epsilon,
+                                                                                       use_target_qnet=None,
                                                                                        render=render
                                                                                 )
-
-# Q, greedy_policy, episode_durations, returns_trends, disc_rewards, trajectories = train_maze(
-#                                                                                        seed=seed,
-#                                                                                        env_name=env_name,
-#                                                                                        # num_samples=5,
-#                                                                                        max_num_episodes=num_episodes,
-#                                                                                        discount_factor=discount_factor,
-#                                                                                        get_epsilon=get_epsilon,
-#                                                                                        render=render
-#                                                                                 )
-
 
 print("Trained in", len(episode_durations), " episodes")
 
 print("Repeating the last training episode")
-play_trajectory(utils.create_env(env_name), trajectories[-1][0], seed=trajectories[-1][1], render=True)
+play_trajectory(env, trajectories[-1][0], seed=trajectories[-1][1], render=True)
 
 
 print("Testing the model")
-play_episodes(utils.create_env(env_name), greedy_policy, n=1, seed=trajectories[-1][1], render=True, maze=True)
+play_episodes(env, model, n=5, seed=trajectories[-1][1], render=True)
+
+print("Fine-training the model")
+memory = ReplayMemory(2000)
+episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
+                                                                              model,
+                                                                              memory,
+                                                                              env,
+                                                                              num_episodes,
+                                                                              batch_size,
+                                                                              discount_factor,
+                                                                              learn_rate,
+                                                                              get_epsilon=get_epsilon,
+                                                                              use_target_qnet=use_target_qnet,
+                                                                              render=render)
+
+print("Repeating the last training episode")
+play_trajectory(env, trajectories[-1][0], seed=trajectories[-1][1], render=True)
+
+
+print("Testing the model")
+play_episodes(env, model, n=5, seed=trajectories[-1][1], render=True)

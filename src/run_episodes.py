@@ -85,5 +85,6 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
         episode_durations.append(duration)
         rewards.append(reward)
         disc_rewards.append(disc_reward)
+        print(i, reward, disc_reward)
 
     return episode_durations, rewards, disc_rewards, losses, trajectories

@@ -41,7 +41,7 @@ batch_size = 64
 learn_rate = 1e-3
 memory = ReplayMemory(2000)
 num_hidden = 128
-seed = 34
+seed = 42
 use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
@@ -111,20 +111,20 @@ for i in range(5):
     play_trajectory(env, trajectories[-i][0],
                     seed=trajectories[-i][1], render=render)
 
-backward_train(train=train_QNet_true_gradient, 
-               model=model, 
-               memory=memory, 
-               trajectory=trajectories[-1][0],
-               seed=trajectories[-1][1],
-               env_name=env_name, 
-               stop_coeff=1.0, 
-               smoothing_num=1,
-               num_splits=5, 
-               num_samples=5, 
-               max_num_episodes=num_episodes, 
-               batch_size=batch_size, 
-               discount_factor=discount_factor, 
-               learn_rate=learn_rate,
-               get_epsilon=get_epsilon, 
-               use_target_qnet=None, 
-               render=render)
+# backward_train(train=train_QNet_true_gradient,
+#                model=model,
+#                memory=memory,
+#                trajectory=trajectories[-1][0],
+#                seed=trajectories[-1][1],
+#                env_name=env_name,
+#                stop_coeff=1.0,
+#                smoothing_num=1,
+#                num_splits=5,
+#                num_samples=5,
+#                max_num_episodes=num_episodes,
+#                batch_size=batch_size,
+#                discount_factor=discount_factor,
+#                learn_rate=learn_rate,
+#                get_epsilon=get_epsilon,
+#                use_target_qnet=None,
+#                render=render)
