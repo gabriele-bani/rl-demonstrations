@@ -100,6 +100,7 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
     returns_trends = []
     disc_rewards = []
     trajectories = []
+    last_split_steps = 0
     
     splits = utils.chunks(len(trajectory), num_splits)
     
@@ -128,6 +129,7 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             duration = 0
             episode_return = 0
             disc_reward = 0
+            last_split_steps = i
             
             current_trajectory = trajectory[:starting_state_idx]
             
@@ -166,11 +168,14 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             trajectories.append((current_trajectory, seed))
             
             # losses.append(loss)
-            episode_durations.append(duration)
-            returns_trends.append(episode_return)
-            dr = episode_return -real_returns[starting_state_idx]
+            episode_durations.append(duration + starting_state_idx)
+            starting_return = real_returns[0] - real_returns[starting_state_idx]
+            returns_trends.append(episode_return + starting_return)
+            dr = episode_return - real_returns[starting_state_idx]
             victory = dr >= -0.1 * abs(real_returns[starting_state_idx])
             # victory = int(episode_return > real_returns[starting_state_idx])
+            # TODO look at the plots... suboptimal and bad do better than the baseline easily, so they go to the
+            # TODO next split even if the learned policy is still very bad!
             victories.append(victory)
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
@@ -182,14 +187,28 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
                 break
         
         print("Split", s, "finished in", i + 1, "episodes out of ", max_num_episodes)
+
+    # Added
+    Q, greedy_policy, episode_durations_final, returns_trends_final, disc_rewards_final, trajectories_final = train_maze(
+                                                                                           seed=seed,
+                                                                                           env_name=env_name,
+                                                                                           # num_samples=5,
+                                                                                           max_num_episodes=20,
+                                                                                           discount_factor=discount_factor,
+                                                                                           get_epsilon=get_epsilon,
+                                                                                           render=render,
+                                                                                            Q=Q,
+                                                                                            begin_at_step=last_split_steps
+                                                                                    )
+
         
     greedy_policy = make_greedy_policy(Q)
     
-    return Q, greedy_policy, episode_durations, returns_trends, disc_rewards, trajectories
+    return Q, greedy_policy, episode_durations+episode_durations_final, returns_trends+returns_trends_final, disc_rewards+disc_rewards_final, trajectories+trajectories_final
 
 
 def train_maze(seed, env_name, max_num_episodes, discount_factor,
-                        get_epsilon, render=False, Q=None):
+                        get_epsilon, render=False, Q=None, begin_at_step=0):
     
     # Count the steps (do not reset at episode start, to compute epsilon)
     global_steps = 0
@@ -203,6 +222,11 @@ def train_maze(seed, env_name, max_num_episodes, discount_factor,
 
     env = utils.create_env(env_name)
     n_actions = env.action_space.n
+
+    assert seed == int(seed)
+    seed = int(seed)
+    random.seed(seed)
+    # env.seed(seed)  # results in: WARN: Could not seed environment <MazeEnv instance>
     
     if Q is None:
         Q = defaultdict(lambda: np.zeros(n_actions))
@@ -210,13 +234,7 @@ def train_maze(seed, env_name, max_num_episodes, discount_factor,
     # The policy we're following
     policy = make_epsilon_greedy_policy(Q, epsilon, n_actions)
     
-    for i in range(max_num_episodes):
-        
-        assert seed == int(seed)
-        seed = int(seed)
-    
-        random.seed(seed)
-        env.seed(seed)
+    for i in range(begin_at_step, begin_at_step + max_num_episodes):
     
         state = env.reset()
         
