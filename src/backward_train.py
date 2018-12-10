@@ -21,9 +21,10 @@ def repeat_trajectory(trajectory, seed, env_name):
     
     assert seed == int(seed)
     seed = int(seed)
-    
+
     random.seed(seed)
     torch.manual_seed(seed)
+    np.random.seed(seed)
     env.seed(seed)
 
     env.reset()
@@ -38,7 +39,7 @@ def repeat_trajectory(trajectory, seed, env_name):
         states.append(obs_s)
         rewards.append(obs_r)
         next_state, r, done, _ = env.step(obs_a)
-        if np.any(obs_ns != next_state) or r != obs_r or done != obs_done:
+        if np.any(obs_ns - next_state > 1e-12) or r != obs_r or done != obs_done:
             raise ValueError("Trajectory not copied during repeat_trajectory function!")
 
     # total_reward = 0
@@ -141,7 +142,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
             starting_return = real_returns[0] - real_returns[starting_state_idx]
             # print(epsilon)
-            print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
+            # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -159,7 +160,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
             average_victories = np.mean(victories[-smoothing_num:])
-            print("\t\tAverage Victory Rate: ", average_victories)
+            # print("\t\tAverage Victory Rate: ", average_victories)
             
             if len(victories) > smoothing_num and average_victories >= stop_coeff:
                 break

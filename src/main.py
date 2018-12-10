@@ -61,7 +61,8 @@ random.seed(seed)
 torch.manual_seed(seed)
 env.seed(seed)
 
-model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
+# model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
+model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
 
 # episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet, model, memory, env, num_episodes,
 #                                                                 batch_size, discount_factor, learn_rate,

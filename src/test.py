@@ -15,12 +15,12 @@ import random
 import gym
 from replay import play_episodes, play_trajectory
 from backward_train import backward_train, repeat_trajectory
+from PolynomialNetwork import PolynomialNetwork
 
 import utils
 
 env_name = "MountainCar-v0"
 
-env = gym.envs.make(env_name)
 
 num_inputs = {
     "MountainCar-v0": 2,
@@ -35,37 +35,41 @@ num_outputs = {
 }
 
 batch_size = 64
-learn_rate = 1e-3
+learn_rate = 1e-2
 memory = ReplayMemory(2000)
 num_hidden = 128
-seed = 34
-use_target_qnet = True
+seed = 33
+use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
 num_episodes = 170
 discount_factor = 0.99
 
-num_splits = 15
-smoothing_num = 20
-stop_coeff = 0.2
+num_splits = 20
+smoothing_num = 10
+stop_coeff = 0.5
 
-eps_iterations = 10
+eps_iterations = 0
 intial_eps = 1
 final_eps = 0.05
 
-alpha = np.power(final_eps/intial_eps, 1/eps_iterations)
+# alpha = np.power(final_eps/intial_eps, 1/eps_iterations)
 
 def get_epsilon(it):
-    # return intial_eps - it*((intial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
-    return intial_eps * alpha**it if it < eps_iterations else final_eps
+    return intial_eps - it*((intial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    # return intial_eps * alpha**it if it < eps_iterations else final_eps
 
 
 random.seed(seed)
 torch.manual_seed(seed)
+np.random.seed(seed)
+env = gym.envs.make(env_name)
+
 env.seed(seed)
 
 model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+# model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
 
 
 # data = utils.load_trajectories(env_name)
@@ -76,7 +80,7 @@ data = utils.load_trajectories(env_name, filename="selected_trajectories")
 print(data.sum_reward)
 
 # row = data["sum_reward"].idxmax()
-row = 0
+row = 1
 
 print("Best Trajectory: {} with return {}".format(row, data.iloc[row].sum_reward))
 
@@ -105,7 +109,7 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        discount_factor=discount_factor,
                                                                                        learn_rate=learn_rate,
                                                                                        get_epsilon=get_epsilon,
-                                                                                       use_target_qnet=None,
+                                                                                       use_target_qnet=use_target_qnet,
                                                                                        render=render
                                                                                 )
 
