@@ -46,7 +46,7 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 250
+num_episodes = 500
 discount_factor = 0.99
 
 eps_iterations = 100
@@ -99,7 +99,7 @@ plt.show()
 
 # play some episodes to test
 print("start playing episodes with the trained model")
-play_episodes(env, model, 3, render=render)
+play_episodes(env, model, 50, render=render)
 
 
 # play the first 20 trajectories.
@@ -111,20 +111,20 @@ for i in range(5):
     play_trajectory(env, trajectories[-i][0],
                     seed=trajectories[-i][1], render=render)
 
-backward_train(train=train_QNet_true_gradient, 
-               model=model, 
-               memory=memory, 
-               trajectory=trajectories[-1][0],
-               seed=trajectories[-1][1],
-               env_name=env_name, 
-               stop_coeff=1.0, 
-               smoothing_num=1,
-               num_splits=5, 
-               num_samples=5, 
-               max_num_episodes=num_episodes, 
-               batch_size=batch_size, 
-               discount_factor=discount_factor, 
-               learn_rate=learn_rate,
-               get_epsilon=get_epsilon, 
-               use_target_qnet=None, 
-               render=render)
+# backward_train(train=train_QNet_true_gradient, 
+#                model=model, 
+#                memory=memory, 
+#                trajectory=trajectories[-1][0],
+#                seed=trajectories[-1][1],
+#                env_name=env_name, 
+#                stop_coeff=1.0, 
+#                smoothing_num=1,
+#                num_splits=5, 
+#                num_samples=5, 
+#                max_num_episodes=num_episodes, 
+#                batch_size=batch_size, 
+#                discount_factor=discount_factor, 
+#                learn_rate=learn_rate,
+#                get_epsilon=get_epsilon, 
+#                use_target_qnet=None, 
+#                render=render)
