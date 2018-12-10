@@ -11,6 +11,7 @@ from train_QNet import train_QNet, train_QNet_true_gradient
 from run_episodes import run_episodes
 from memory import ReplayMemory
 from QNetwork import QNetwork
+from PolynomialNetwork import PolynomialNetwork
 import random
 import gym
 from replay import play_episodes, play_trajectory
@@ -38,7 +39,7 @@ num_outputs = {
 }
 
 batch_size = 64
-learn_rate = 1e-3
+learn_rate = 1e-2
 memory = ReplayMemory(2000)
 num_hidden = 128
 seed = 42
@@ -46,7 +47,7 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 250
+num_episodes = 500
 discount_factor = 0.99
 
 eps_iterations = 100
@@ -60,7 +61,7 @@ random.seed(seed)
 torch.manual_seed(seed)
 env.seed(seed)
 
-model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
 
 # episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet, model, memory, env, num_episodes,
 #                                                                 batch_size, discount_factor, learn_rate,
