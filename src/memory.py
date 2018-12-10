@@ -1,5 +1,6 @@
 import random
 
+
 class ReplayMemory:
 
     def __init__(self, capacity):
@@ -14,6 +15,10 @@ class ReplayMemory:
     def sample(self, batch_size):
         sample = random.sample(self.memory, batch_size)
         return sample
-
+    
+    def reset(self):
+        del self.memory
+        self.memory = []
+    
     def __len__(self):
         return len(self.memory)

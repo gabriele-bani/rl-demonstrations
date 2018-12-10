@@ -43,11 +43,12 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 500
+num_episodes = 200
 discount_factor = 0.99
 
 eps_iterations = 100
 final_eps = 0.05
+
 
 def get_epsilon(it):
     return 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
@@ -62,13 +63,16 @@ model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_out
 
 data = utils.load_trajectories(env_name)
 
-trajectory = data.iloc[-1]["trajectory"]
-seed = data.iloc[-1]["seed"]
+row = data["sum_reward"].idxmax()
+
+print("Best Trajectory: {} with return {}".format(row, data.iloc[row].sum_reward))
+
+trajectory = data.iloc[row]["trajectory"]
+seed = data.iloc[row]["seed"]
 
 
-print("Replaying training trajectory")
-play_trajectory(utils.create_env(env_name), trajectory, seed=seed, render=True)
-
+# print("Replaying training trajectory")
+# play_trajectory(env, trajectory, seed=seed, render=True)
 
 print("Starting Training")
 model, episode_durations, returns_trends, disc_rewards, losses, trajectories = backward_train(
@@ -78,9 +82,9 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        trajectory=trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.2,
-                                                                                       smoothing_num=5,
-                                                                                       num_splits=10,
+                                                                                       stop_coeff=0.25,
+                                                                                       smoothing_num=20,
+                                                                                       num_splits=15,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
                                                                                        batch_size=batch_size,
@@ -94,8 +98,29 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
 print("Trained in", len(episode_durations), " episodes")
 
 print("Repeating the last training episode")
-play_trajectory(utils.create_env(env_name), trajectories[-1][0], seed=trajectories[-1][1], render=True)
+play_trajectory(env, trajectories[-1][0], seed=trajectories[-1][1], render=True)
 
 
 print("Testing the model")
-play_episodes(utils.create_env(env_name), model, n=5, seed=trajectories[-1][1], render=True)
+play_episodes(env, model, n=5, seed=trajectories[-1][1], render=True)
+
+print("Fine-training the model")
+memory = ReplayMemory(2000)
+episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
+                                                                              model,
+                                                                              memory,
+                                                                              env,
+                                                                              num_episodes,
+                                                                              batch_size,
+                                                                              discount_factor,
+                                                                              learn_rate,
+                                                                              get_epsilon=get_epsilon,
+                                                                              use_target_qnet=use_target_qnet,
+                                                                              render=render)
+
+print("Repeating the last training episode")
+play_trajectory(env, trajectories[-1][0], seed=trajectories[-1][1], render=True)
+
+
+print("Testing the model")
+play_episodes(env, model, n=5, seed=trajectories[-1][1], render=True)

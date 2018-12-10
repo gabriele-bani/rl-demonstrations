@@ -1,4 +1,8 @@
 from train_QNet import *
+import torch
+import numpy as np
+from torch import optim
+import random
 import copy
 import utils
 
@@ -68,6 +72,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
     
     for s, split in enumerate(splits):
         print("Split", s)
+        # memory.reset()
         
         # block_simulated_returns = []
         # block_real_returns = []
@@ -77,7 +82,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
         for i in range(max_num_episodes):
             
             starting_state_idx = np.random.choice(split)
-            print("\t{}".format(starting_state_idx))
+            # print("\t{}".format(starting_state_idx))
             env = copy.deepcopy(environment_states[starting_state_idx])
             state = states[starting_state_idx]
             
@@ -117,7 +122,8 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             
             env.close()
             
-            print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return, real_returns[starting_state_idx]))
+            # print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return, real_returns[starting_state_idx]))
+            print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -126,14 +132,14 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             losses.append(loss)
             episode_durations.append(duration)
             returns_trends.append(episode_return)
-            victories.append(int(episode_return > real_returns[starting_state_idx]))
+            victories.append(int(episode_return >= real_returns[starting_state_idx]))
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
             average_victories = np.mean(victories[-smoothing_num:])
-            print("\t\tAverage number of victories recently: ", average_victories)
+            print("\t\tAverage Victory Rate: ", average_victories)
             
-            if len(victories) > smoothing_num and average_victories > stop_coeff:
+            if len(victories) > smoothing_num and average_victories >= stop_coeff:
                 break
         
         print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes)
