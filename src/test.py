@@ -66,12 +66,11 @@ trajectory = data.iloc[-1]["trajectory"]
 seed = data.iloc[-1]["seed"]
 
 
+print("Replaying training trajectory")
+play_trajectory(utils.create_env(env_name), trajectory, seed=seed, render=True)
 
-# for l in utils.chunks(100, 17):
-#     print(l)
 
-# assert False
-
+print("Starting Training")
 model, episode_durations, returns_trends, disc_rewards, losses, trajectories = backward_train(
                                                                                        train=train_QNet_true_gradient,
                                                                                        model=model,
@@ -79,9 +78,9 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        trajectory=trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.5,
+                                                                                       stop_coeff=0.2,
                                                                                        smoothing_num=5,
-                                                                                       num_splits=5,
+                                                                                       num_splits=10,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
                                                                                        batch_size=batch_size,

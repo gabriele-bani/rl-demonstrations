@@ -1,16 +1,6 @@
-import torch
-import random
-import gym
-from torch import nn
-import torch.nn.functional as F
-import numpy as np
-from torch import optim
-from tqdm import tqdm as _tqdm
-import random
 from train_QNet import *
 import copy
 import utils
-import math
 
 
 def repeat_trajectory(trajectory, seed, env_name):
@@ -74,15 +64,15 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
 
     splits = utils.chunks(len(trajectory), num_splits)
 
-    environment_states, states, rewards = repeat_trajectory(
-        trajectory, seed, env_name)
-
+    environment_states, states, real_returns = repeat_trajectory(trajectory, seed, env_name)
+    
     for s, split in enumerate(splits):
         print("Split", s)
-        # TODO - redefine getepsilon function here
         
-        block_simulated_returns = []
-        block_real_returns = []
+        # block_simulated_returns = []
+        # block_real_returns = []
+        
+        victories = []
         
         for i in range(max_num_episodes):
             
@@ -127,7 +117,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             
             env.close()
             
-            print("\t\teps =", epsilon)
+            print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return, real_returns[starting_state_idx]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -136,13 +126,14 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             losses.append(loss)
             episode_durations.append(duration)
             returns_trends.append(episode_return)
-            block_simulated_returns.append(episode_return)
-            block_real_returns.append(rewards[starting_state_idx])
+            victories.append(int(episode_return > real_returns[starting_state_idx]))
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
-
-            if len(block_simulated_returns) > smoothing_num and np.mean(block_simulated_returns[-smoothing_num:]) > stop_coeff * np.mean(block_real_returns[-smoothing_num:]):
+            average_victories = np.mean(victories[-smoothing_num:])
+            print("\t\tAverage number of victories recently: ", average_victories)
+            
+            if len(victories) > smoothing_num and average_victories > stop_coeff:
                 break
         
         print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes)
