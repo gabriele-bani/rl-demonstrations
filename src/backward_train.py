@@ -98,11 +98,19 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             env.render() if render and i % 1 == 0 else None
 
             while True:
+                # if duration < len(split):
+                #     epsilon = get_epsilon(i)
+                # else:
+                #     epsilon = get_epsilon(10000)
+
                 epsilon = get_epsilon(i)
                 a = select_action(model, state, epsilon)
 
                 next_state, r, done, _ = env.step(a)
-                env.render() if render and i % 1 == 0 else None
+                # env.render() if render and i % 1 == 0 else None
+                
+                if (render and i % 1 == 0) or (i > 180 and np.mean(victories[-smoothing_num:]) < 0.001):
+                    env.render()
 
                 duration += 1
                 episode_return += r
@@ -123,7 +131,10 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             env.close()
             
             # print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return, real_returns[starting_state_idx]))
-            print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
+            # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
+            starting_return = real_returns[0] - real_returns[starting_state_idx]
+            # print(epsilon)
+            print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -132,7 +143,11 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             losses.append(loss)
             episode_durations.append(duration)
             returns_trends.append(episode_return)
-            victories.append(int(episode_return >= real_returns[starting_state_idx]))
+            
+            dr = episode_return - real_returns[starting_state_idx]
+            victory = dr >= - 0.1*abs(real_returns[starting_state_idx])
+            
+            victories.append(int(victory))
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)

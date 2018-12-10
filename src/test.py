@@ -39,19 +39,26 @@ learn_rate = 1e-3
 memory = ReplayMemory(2000)
 num_hidden = 128
 seed = 34
-use_target_qnet = False
+use_target_qnet = True
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 200
+num_episodes = 170
 discount_factor = 0.99
 
-eps_iterations = 100
+num_splits = 15
+smoothing_num = 20
+stop_coeff = 0.2
+
+eps_iterations = 10
+intial_eps = 1
 final_eps = 0.05
 
+alpha = np.power(final_eps/intial_eps, 1/eps_iterations)
 
 def get_epsilon(it):
-    return 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    # return intial_eps - it*((intial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    return intial_eps * alpha**it if it < eps_iterations else final_eps
 
 
 random.seed(seed)
@@ -61,9 +68,15 @@ env.seed(seed)
 model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
 
 
-data = utils.load_trajectories(env_name)
+# data = utils.load_trajectories(env_name)
+data = utils.load_trajectories(env_name, filename="selected_trajectories")
 
-row = data["sum_reward"].idxmax()
+# data.sort_values(by="sum_reward", inplace=True)
+
+print(data.sum_reward)
+
+# row = data["sum_reward"].idxmax()
+row = 0
 
 print("Best Trajectory: {} with return {}".format(row, data.iloc[row].sum_reward))
 
@@ -74,6 +87,7 @@ seed = data.iloc[row]["seed"]
 # print("Replaying training trajectory")
 # play_trajectory(env, trajectory, seed=seed, render=True)
 
+
 print("Starting Training")
 model, episode_durations, returns_trends, disc_rewards, losses, trajectories = backward_train(
                                                                                        train=train_QNet_true_gradient,
@@ -82,9 +96,9 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        trajectory=trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.25,
-                                                                                       smoothing_num=20,
-                                                                                       num_splits=15,
+                                                                                       stop_coeff=stop_coeff,
+                                                                                       smoothing_num=smoothing_num,
+                                                                                       num_splits=num_splits,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
                                                                                        batch_size=batch_size,
