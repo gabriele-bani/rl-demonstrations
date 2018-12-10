@@ -12,11 +12,15 @@ import utils
 ###
 ### the functions in this file have the only purpose of visualization
 ###
-frame_time = 0.005
+frame_time = 0.02
 
 
 def play_episodes(env, model, n=20, seed=42, render=True):
     episode_durations = []
+
+    assert seed == int(seed)
+    seed = int(seed)
+    
     for i in range(n):
         env.seed(seed + i)
         state = env.reset()
@@ -52,6 +56,9 @@ def play_episodes(env, model, n=20, seed=42, render=True):
 def play_trajectory(env, trajectory, seed=42, render=True):
     episode_durations = []
 
+    assert seed == int(seed)
+    seed = int(seed)
+    
     random.seed(seed)
     torch.manual_seed(seed)
     env.seed(seed)
@@ -75,7 +82,10 @@ def play_trajectory(env, trajectory, seed=42, render=True):
             print(state, trajectory[j][3])
             print("the trajectory and the simulation do not match! watch the seeds!")
             raise ValueError
-        time.sleep(frame_time)
+
+        if render:
+            env.render()
+            time.sleep(frame_time)
         j += 1
 
     episode_durations.append(steps)

@@ -6,7 +6,7 @@ import numpy as np
 import os
 from datetime import datetime
 import torch
-
+import math
 import re
 
 maze_parser = re.compile(r"""Maze_\((\d+),(\d+),(\d+),(\d*\.\d+|\d+),(\d*\.\d+|\d+)\)""")
@@ -160,6 +160,17 @@ def load_trajectories(env_name, date=None):
 
 
 def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+    
+    assert n < l/2
+    
+    s = l // n
+    r = l % n
+    
+    p = l
+    
+    while p > 0:
+        yield list(range(p - s - (r > 0), p))
+        p -= s + (r > 0)
+        r -= 1
+        
+

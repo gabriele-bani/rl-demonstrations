@@ -19,9 +19,9 @@ from backward_train import backward_train, repeat_trajectory
 import utils
 
 # dir_path = os.path.dirname(os.path.realpath(__file__))
-# env_name = "MountainCar-v0"
+env_name = "MountainCar-v0"
 # env_name = "LunarLander-v2"
-env_name = "CartPole-v0"
+# env_name = "CartPole-v0"
 
 env = gym.envs.make(env_name)
 
