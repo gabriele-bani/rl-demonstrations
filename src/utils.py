@@ -18,6 +18,10 @@ DIRPATH = os.path.dirname(os.path.realpath(__file__))
 DATADIR = f"{DIRPATH}/../data/"
 
 
+def smooth(x, N):
+    cumsum = np.cumsum(np.insert(x, 0, 0))
+    return (cumsum[N:] - cumsum[:-N]) / float(N)
+
 def create_env(name, *args, **kwargs):
     
     match = maze_parser.fullmatch(name)
