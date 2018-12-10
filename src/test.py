@@ -43,7 +43,7 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 250
+num_episodes = 500
 discount_factor = 0.99
 
 eps_iterations = 100
@@ -79,7 +79,7 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        trajectory=trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.9,
+                                                                                       stop_coeff=0.5,
                                                                                        smoothing_num=5,
                                                                                        num_splits=5,
                                                                                        # num_samples=5,
@@ -92,8 +92,11 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        render=render
                                                                                 )
 
+print("Trained in", len(episode_durations), " episodes")
 
+print("Repeating the last training episode")
 play_trajectory(utils.create_env(env_name), trajectories[-1][0], seed=trajectories[-1][1], render=True)
 
 
+print("Testing the model")
 play_episodes(utils.create_env(env_name), model, n=5, seed=trajectories[-1][1], render=True)

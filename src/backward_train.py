@@ -81,14 +81,15 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
         print("Split", s)
         # TODO - redefine getepsilon function here
         
-        block_returns_trends = []
+        block_simulated_returns = []
+        block_real_returns = []
         
         for i in range(max_num_episodes):
+            
             starting_state_idx = np.random.choice(split)
-            print("\t", starting_state_idx)
+            print("\t{}".format(starting_state_idx))
             env = copy.deepcopy(environment_states[starting_state_idx])
             state = states[starting_state_idx]
-            trajectory_return = rewards[starting_state_idx]
             
             duration = 0
             episode_return = 0
@@ -126,6 +127,8 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             
             env.close()
             
+            print("\t\teps =", epsilon)
+            
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
             trajectories.append((current_trajectory, seed))
@@ -133,12 +136,15 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             losses.append(loss)
             episode_durations.append(duration)
             returns_trends.append(episode_return)
-            block_returns_trends.append(episode_return)
+            block_simulated_returns.append(episode_return)
+            block_real_returns.append(rewards[starting_state_idx])
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
 
-            if len(block_returns_trends) > smoothing_num and np.mean(block_returns_trends[-smoothing_num:]) > trajectory_return * stop_coeff:
+            if len(block_simulated_returns) > smoothing_num and np.mean(block_simulated_returns[-smoothing_num:]) > stop_coeff * np.mean(block_real_returns[-smoothing_num:]):
                 break
-
+        
+        print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes)
+        
     return model, episode_durations, returns_trends, disc_rewards, losses, trajectories
