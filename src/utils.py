@@ -8,6 +8,7 @@ from datetime import datetime
 import torch
 import math
 import re
+from typing import List, Tuple
 
 maze_parser = re.compile(r"""Maze_\((\d+),(\d+),(\d+),(\d*\.\d+|\d+),(\d*\.\d+|\d+)\)""")
 
@@ -21,6 +22,7 @@ DATADIR = f"{DIRPATH}/../data/"
 def smooth(x, N):
     cumsum = np.cumsum(np.insert(x, 0, 0))
     return (cumsum[N:] - cumsum[:-N]) / float(N)
+
 
 def create_env(name, *args, **kwargs):
     
@@ -180,5 +182,71 @@ def chunks(l, n):
         yield list(range(p - s - (r > 0), p))
         p -= s + (r > 0)
         r -= 1
+
+
+def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[int], List[Tuple], int, int, int, int, int, int]]):
+    dataframe = []
+    
+    time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    
+    for returns, seed, demonstration_value, chunks, eps_iterations, stop_victories, smoothing_victories in experiments:
+        row = {}
         
+        row["env_name"] = env_name
+        row["env_params"] = env_params
+        
+        # list of returns of each episode seen during training
+        row["returns"] = returns
+        # seed of the experiment
+        row["seed"] = seed
+        # return of the trajectory used as demonstration (None if trained from scratch, i.e. no demonstrations provided)
+        row["demonstration_value"] = demonstration_value
+        # number of chunks the trajectory has been split in (None if trained from scratch, i.e. no demonstrations provided)
+        row["chunks"] = chunks
+        # number of steps where the epsilon decreased linerly
+        row["eps_iterations"] = eps_iterations
+        # number of victories required for considering a split solved (None if trained from scratch, i.e. no demonstrations provided)
+        row["stop_victories"] = stop_victories
+        # number of episodes to consider to count the victories (None if trained from scratch, i.e. no demonstrations provided)
+        row["smoothing_victories"] = smoothing_victories
+        
+        row["train_length"] = len(returns)
+        
+        row["time"] = time
+        
+        dataframe.append(row)
+    
+    df = pd.DataFrame(dataframe)
+    
+    return df
+
+
+def store_experiments(env_name: str, env_params, experiments: List[Tuple[List[int], List[Tuple], int, int, int, int, int, int]], filename: str = None):
+    df = experiments_to_dataframe(env_name, env_params, experiments)
+    
+    dir = build_data_dir(env_name)
+    if filename is not None:
+        filename = os.path.join(dir, filename)
+    else:
+        filename = os.path.join(dir, "experiments.pkl")
+    
+    if os.path.isfile(filename):
+        old_df = load_experiments(env_name, filename=filename)
+        df = pd.concat([old_df, df], ignore_index=True)
+        
+    df.to_pickle(filename)
+    
+    return df
+
+
+def load_experiments(env_name, filename=None):
+    dir = build_data_dir(env_name)
+    if filename is None:
+        filename = os.path.join(dir, "experiments.pkl")
+    else:
+        filename = os.path.join(dir, "{}.pkl".format(filename))
+    
+    df = pd.read_pickle(filename)
+    
+    return df
 
