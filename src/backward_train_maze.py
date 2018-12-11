@@ -183,8 +183,8 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             average_victories = np.mean(victories[-smoothing_num:])
             print("\t\tAverage number of victories recently: ", average_victories)
             
-            if len(victories) > smoothing_num and average_victories > stop_coeff:
-                break
+            # if len(victories) > smoothing_num and average_victories > stop_coeff:
+            #     break
         
         print("Split", s, "finished in", i + 1, "episodes out of ", max_num_episodes)
 
@@ -193,7 +193,7 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
                                                                                            seed=seed,
                                                                                            env_name=env_name,
                                                                                            # num_samples=5,
-                                                                                           max_num_episodes=20,
+                                                                                           max_num_episodes=50,
                                                                                            discount_factor=discount_factor,
                                                                                            get_epsilon=get_epsilon,
                                                                                            render=render,
