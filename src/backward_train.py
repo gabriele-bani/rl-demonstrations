@@ -80,10 +80,6 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
     
     for s, split in enumerate(splits):
         print("Split", s)
-        # memory.reset()
-        
-        # block_simulated_returns = []
-        # block_real_returns = []
         
         victories = []
         
@@ -92,6 +88,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             starting_state_idx = np.random.choice(split)
             # print("\t{}".format(starting_state_idx))
             env = copy.deepcopy(environment_states[starting_state_idx])
+            env.seed(int(seed+i))
             state = states[starting_state_idx]
             
             duration = 0
@@ -142,7 +139,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
             starting_return = real_returns[0] - real_returns[starting_state_idx]
             # print(epsilon)
-            # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
+            print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -159,12 +156,14 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
-            average_victories = np.mean(victories[-smoothing_num:])
-            # print("\t\tAverage Victory Rate: ", average_victories)
+            num_recent_victories = np.sum(victories[-smoothing_num:])
+            print("\t\tNumber of Recent Victories ", num_recent_victories)
             
-            if len(victories) > smoothing_num and average_victories >= stop_coeff:
+            # if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
+            if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
+            # if num_recent_victories >= stop_coeff:
                 break
         
-        print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes)
+        print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes, ";", len(episode_durations), " episodes so far")
         
     return model, episode_durations, returns_trends, disc_rewards, losses, trajectories

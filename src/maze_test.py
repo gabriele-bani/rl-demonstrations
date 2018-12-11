@@ -35,10 +35,14 @@ seed = 34
 # # whether to visualize some episodes during training
 render = False
 
-num_episodes = 500
+num_splits = 8
+stop_coeff = 3
+smoothing_num = 15
+
+num_episodes = 100
 discount_factor = 0.99
 
-eps_iterations = 50
+eps_iterations = 10
 final_eps = 0.05
 
 def get_epsilon(it):
@@ -47,14 +51,14 @@ def get_epsilon(it):
 def generate_plots():
     plt.figure()
     plt.ylim((0, 500))
-    plt.plot(smooth(episode_durations, smooth_factor), label="trained with optimal traj", alpha=0.5)
-    plt.plot(smooth(episode_durations_scratch, smooth_factor), label="trained from scratch", alpha=0.5)
-    plt.plot(smooth(episode_durations_bad, smooth_factor), label="trained with bad traj", alpha=0.5)
-    plt.plot(smooth(episode_durations_suboptimal, smooth_factor), label="trained with suboptimal traj", alpha=0.5)
+    plt.plot(smooth(returns_trends, smooth_factor), label="trained with optimal traj", alpha=0.5)
+    plt.plot(smooth(returns_trends_scratch, smooth_factor), label="trained from scratch", alpha=0.5)
+    plt.plot(smooth(returns_trends_bad, smooth_factor), label="trained with bad traj", alpha=0.5)
+    plt.plot(smooth(returns_trends_suboptimal, smooth_factor), label="trained with suboptimal traj", alpha=0.5)
     plt.legend()
-    plt.title('Episode durations')
+    plt.title('Total Returns during Training')
     # plt.show()
-    plt.savefig("./plot.png")
+    plt.savefig("./maze_plot.png")
     return
 
 
@@ -82,9 +86,9 @@ Q, greedy_policy, episode_durations, returns_trends, disc_rewards, trajectories 
                                                                                        trajectory=optimal_trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.2,
-                                                                                       smoothing_num=5,
-                                                                                       num_splits=5,
+                                                                                       stop_coeff=stop_coeff,
+                                                                                       smoothing_num=smoothing_num,
+                                                                                       num_splits=num_splits,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
                                                                                        discount_factor=discount_factor,
@@ -96,9 +100,9 @@ Q_suboptimal, greedy_policy_suboptimal, episode_durations_suboptimal, returns_tr
                                                                                        trajectory=suboptimal_trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.2,
-                                                                                       smoothing_num=5,
-                                                                                       num_splits=5,
+                                                                                       stop_coeff=stop_coeff,
+                                                                                       smoothing_num=smoothing_num,
+                                                                                       num_splits=num_splits,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
                                                                                        discount_factor=discount_factor,
@@ -110,9 +114,9 @@ Q_bad, greedy_policy_bad, episode_durations_bad, returns_trends_bad, disc_reward
                                                                                        trajectory=bad_trajectory,
                                                                                        seed=seed,
                                                                                        env_name=env_name,
-                                                                                       stop_coeff=0.2,
-                                                                                       smoothing_num=5,
-                                                                                       num_splits=5,
+                                                                                       stop_coeff=stop_coeff,
+                                                                                       smoothing_num=smoothing_num,
+                                                                                       num_splits=num_splits,
                                                                                        # num_samples=5,
                                                                                        max_num_episodes=num_episodes,
                                                                                        discount_factor=discount_factor,
@@ -130,8 +134,6 @@ Q_scratch, greedy_policy_scratch, episode_durations_scratch, returns_trends_scra
                                                                                        render=render
                                                                                 )
 
-
-
 # print("Repeating the last training episode")
 # play_trajectory(utils.create_env(env_name), trajectories[-1][0], seed=trajectories[-1][1], render=True)
 
@@ -145,7 +147,8 @@ play_episodes(utils.create_env(env_name), greedy_policy_bad, n=1, seed=trajector
 print("Scratch converged in ", len(episode_durations_scratch), "episodes")
 play_episodes(utils.create_env(env_name), greedy_policy_scratch, n=1, seed=trajectories[-1][1], render=False, maze=True, plotting=False)
 
-smooth_factor = 20 # TODO   notice the smoothing factor in the plots!
+# smooth_factor = 20 # TODO   notice the smoothing factor in the plots!
+smooth_factor = 10 # TODO   notice the smoothing factor in the plots!
 generate_plots()
 
 # play_episodes(utils.create_env(env_name), greedy_policy, n=1, seed=trajectories[-1][1], render=True, maze=True, plotting=False)
