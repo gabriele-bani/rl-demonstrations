@@ -47,11 +47,13 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
 
         s = env.reset()
         env.render() if render and i % 1 == 0 else None
-
+        # stopp = False
         while True:
             epsilon = get_epsilon(i)
             a = select_action(model, s, epsilon)
-
+            # if stopp:
+            #     a = 0
+            #     print('stopped action')
             next_state, r, done, _ = env.step(a)
             env.render() if render and i % 1 == 0 else None
 
@@ -66,10 +68,17 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
 
             trajectory.append((s, a, r, next_state, done))
             memory.push((s, a, r, next_state, done))
+            # if not stopp:
             loss = train(model, memory, optimizer, batch_size, discount_factor,
                          target_model=target_model)
             global_steps += 1
-
+            # if r >= 100:
+            #     print(r)
+            #     if done:
+            #         print("also done!!!! ", r)
+            #         stopp = True
+            # if duration > 300:
+            #     done = True
             if done:
                 break
 
@@ -85,6 +94,6 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
         episode_durations.append(duration)
         rewards.append(reward)
         disc_rewards.append(disc_reward)
-        print(i, reward, disc_reward)
+        # print(i, reward, disc_reward)
 
     return episode_durations, rewards, disc_rewards, losses, trajectories

@@ -12,15 +12,15 @@ import utils
 ###
 ### the functions in this file have the only purpose of visualization
 ###
-frame_time = 0.02
+frame_time = 0.01
 
 
-def play_episodes(env, model, n=20, seed=42, render=True, maze=False, plotting=True):
+def play_episodes(env, model, n=20, seed=34, render=True, maze=False, plotting=True):
     episode_durations = []
 
     assert seed == int(seed)
     seed = int(seed)
-    
+    rewards = []
     for i in range(n):
         env.seed(seed + i)
         state = env.reset()
@@ -28,7 +28,7 @@ def play_episodes(env, model, n=20, seed=42, render=True, maze=False, plotting=T
         if render:
             env.render()
             time.sleep(frame_time)
-
+        tot_r = 0
         done = False
         steps = 0
 
@@ -42,18 +42,18 @@ def play_episodes(env, model, n=20, seed=42, render=True, maze=False, plotting=T
                 else:
                     action = select_action(model, state, epsilon=0)
             state, reward, done, _ = env.step(action)
-
+            tot_r += reward
             if render:
                 env.render()
                 time.sleep(frame_time)
-
+        rewards.append(tot_r)
         episode_durations.append(steps)
         env.close()
         print("Episode duration:", steps)
     
     if plotting:
         plt.figure()
-        plt.plot(episode_durations)
+        plt.plot(rewards)
         plt.title('Episode durations')
         plt.show()
 
@@ -77,13 +77,13 @@ def play_trajectory(env, trajectory, seed=42, render=True):
 
     done = False
     steps = 0
-
+    tot_r = 0
     while not done and j < len(trajectory):
         steps += 1
 
         action = trajectory[j][1]
         state, reward, done, _ = env.step(action)
-
+        tot_r += reward
         if np.mean(np.abs(np.array(state) - np.array(trajectory[j][3]))) > 1e-15:
             print(state, trajectory[j][3])
             print("the trajectory and the simulation do not match! watch the seeds!")
@@ -93,15 +93,16 @@ def play_trajectory(env, trajectory, seed=42, render=True):
             env.render()
             time.sleep(frame_time)
         j += 1
-
+    print('Total reward =', tot_r)
     episode_durations.append(steps)
     env.close()
 
 
 if __name__ == "__main__":
 
-    env_name = "MountainCar-v0"
-    
+    # env_name = "MountainCar-v0"
+    env_name = "LunarLander-v2"
+
     # env_name = "Maze_(15,15,42,1.0,1.0)"
     
     env = utils.create_env(env_name)
@@ -113,14 +114,16 @@ if __name__ == "__main__":
     # TODO - FIX IN CASE OF MAZE, DEPENDING ON HOW WE IMPLEMENT THE MODEL
     print("start playing episodes with the trained model")
     play_episodes(env, model, 3)
-    
+
     c = 0
     print("start replaying trajectories")
     for i, row in trajectories.iloc[::-1].iterrows():
         print("replaying trajectory", -i)
-        
+
         play_trajectory(env, row["trajectory"], seed=row["seed"])
-        
+
         c += 1
         if c > 5:
             break
+    # row = trajectories.iloc[759]
+    # play_trajectory(env, row["trajectory"], seed=row["seed"])
