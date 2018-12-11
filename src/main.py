@@ -20,8 +20,8 @@ from backward_train import backward_train, repeat_trajectory
 import utils
 
 # dir_path = os.path.dirname(os.path.realpath(__file__))
-env_name = "MountainCar-v0"
-# env_name = "LunarLander-v2"
+# env_name = "MountainCar-v0"
+env_name = "LunarLander-v2"
 # env_name = "CartPole-v0"
 
 env = gym.envs.make(env_name)
@@ -39,18 +39,18 @@ num_outputs = {
 }
 
 batch_size = 64
-learn_rate = 1e-2
+learn_rate = 1e-3
 memory = ReplayMemory(2000)
 num_hidden = 128
 seed = 42
-use_target_qnet = False
+use_target_qnet = True
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 500
+num_episodes = 800
 discount_factor = 0.99
 
-eps_iterations = 100
+eps_iterations = 300
 final_eps = 0.05
 
 def get_epsilon(it):
