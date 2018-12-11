@@ -172,7 +172,7 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             starting_return = real_returns[0] - real_returns[starting_state_idx]
             returns_trends.append(episode_return + starting_return)
             dr = episode_return - real_returns[starting_state_idx]
-            victory = dr >= -0.1 * abs(real_returns[starting_state_idx])
+            victory = dr >= -0.2 * abs(real_returns[starting_state_idx])
             # victory = int(episode_return > real_returns[starting_state_idx])
             # TODO look at the plots... suboptimal and bad do better than the baseline easily, so they go to the
             # TODO next split even if the learned policy is still very bad!
@@ -180,20 +180,30 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
-            average_victories = np.mean(victories[-smoothing_num:])
-            print("\t\tAverage number of victories recently: ", average_victories)
-            
-            # if len(victories) > smoothing_num and average_victories > stop_coeff:
-            #     break
+            num_recent_victories = np.sum(victories[-smoothing_num:])
+            print("\t\tNumber of Recent Victories ", num_recent_victories)
+
+            # if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
+            if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
+                # if num_recent_victories >= stop_coeff:
+                break
         
         print("Split", s, "finished in", i + 1, "episodes out of ", max_num_episodes)
 
     # Added
+
+    eps_iterations = 20
+    final_eps = 0.05
+    initial_eps = 0.8
+
+    def get_epsilon(it):
+        return initial_eps - it*((initial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    
     Q, greedy_policy, episode_durations_final, returns_trends_final, disc_rewards_final, trajectories_final = train_maze(
                                                                                            seed=seed,
                                                                                            env_name=env_name,
                                                                                            # num_samples=5,
-                                                                                           max_num_episodes=50,
+                                                                                           max_num_episodes=100,
                                                                                            discount_factor=discount_factor,
                                                                                            get_epsilon=get_epsilon,
                                                                                            render=render,

@@ -43,15 +43,15 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 170
+num_episodes = 150
 discount_factor = 0.99
 
 num_splits = 20
-smoothing_num = 10
-stop_coeff = 0.5
+smoothing_num = 20
+stop_coeff = 5
 
-eps_iterations = 0
-intial_eps = 1
+eps_iterations = 1
+intial_eps = 0.5
 final_eps = 0.05
 
 # alpha = np.power(final_eps/intial_eps, 1/eps_iterations)
@@ -123,12 +123,18 @@ print("Testing the model")
 play_episodes(env, model, n=5, seed=trajectories[-1][1], render=True)
 
 print("Fine-training the model")
-memory = ReplayMemory(2000)
+eps_iterations = 10
+intial_eps = 0.1
+final_eps = 0.01
+
+def get_epsilon(it):
+    return intial_eps - it*((intial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+
 episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
                                                                               model,
                                                                               memory,
                                                                               env,
-                                                                              num_episodes,
+                                                                              20,
                                                                               batch_size,
                                                                               discount_factor,
                                                                               learn_rate,
