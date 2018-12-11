@@ -36,7 +36,7 @@ seed = 34
 render = False
 
 num_splits = 5
-num_episodes = 200
+num_episodes = 300
 discount_factor = 0.99
 
 eps_iterations = 0
