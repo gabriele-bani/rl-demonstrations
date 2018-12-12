@@ -88,7 +88,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             starting_state_idx = np.random.choice(split)
             # print("\t{}".format(starting_state_idx))
             env = copy.deepcopy(environment_states[starting_state_idx])
-            env.seed(int(seed+i))
+            env.seed(int(seed + 1000 * s + 7 * i))
             state = states[starting_state_idx]
             
             duration = 0
