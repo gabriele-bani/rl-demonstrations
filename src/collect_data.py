@@ -60,10 +60,6 @@ env.reset()
 
 env.seed(seed)
 
-model = QNetwork(num_inputs=num_inputs[env_name],
-                 num_hidden=num_hidden, num_outputs=num_outputs[env_name])
-# model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
-
 
 # data = utils.load_trajectories(env_name)
 data = utils.load_trajectories(env_name, filename="selected_trajectories")
@@ -72,6 +68,9 @@ for index, row in data.iterrows():
     for eps in eps_lst:
         for split in splits_lst:
             for i in range(num_datapoints):
+                model = QNetwork(num_inputs=num_inputs[env_name],
+                                 num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+                # model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
                 testing_seed = np.random.randint(0, 5000)
                 print(
                     f"Starting Backward Training with eps={eps}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
@@ -122,6 +121,9 @@ env.reset()
 env.seed(seed)
 
 for i in range(num_datapoints):
+                model = QNetwork(num_inputs=num_inputs[env_name],
+                                num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+                # model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
                 testing_seed = np.random.randint(0, 5000)
                 print(
                     f"Starting Training from scratch with eps={eps}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
