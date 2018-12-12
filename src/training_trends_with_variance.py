@@ -5,22 +5,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from typing import Dict
 
+import os.path
+
 # plt.xkcd()
-
-# env_name = "MountainCar-v0"
-env_name = "Maze_(15,15,42,1.0,1.0)"
-
-# row["env_name"] = env_name
-# row["env_params"] = env_params
-# row["returns"] = returns
-# row["seed"] = seed
-# row["demonstration_value"] = demonstration_value
-# row["chunks"] = chunks
-# row["eps_iterations"] = eps_iterations
-# row["stop_victories"] = stop_victories
-# row["smoothing_victories"] = smoothing_victories
-# row["train_length"] = len(returns)
-# row["time"] = time
 
 
 def build_line(group):
@@ -65,7 +52,8 @@ def build_plot(env_name, selection_conditions: Dict =None, w=0.5):
     
     experiments.demonstration_value.fillna("From Scratch", inplace=True)
 
-    print(experiments.groupby(by="demonstration_value").size())
+    # print(experiments.groupby(by="demonstration_value").size())
+    print(experiments[["demonstration_value", "train_length"]])
     
     statistics = experiments.groupby(by="demonstration_value").apply(build_line).reset_index()
 
@@ -85,20 +73,30 @@ def build_plot(env_name, selection_conditions: Dict =None, w=0.5):
         
         returns_mean, returns_std = row.returns_mean, row.returns_std
         plt.plot(utils.smooth(returns_mean, smooth), label=row.demonstration_value)
-
-        print(row.demonstration_value, returns_std.mean(), returns_std.var())
         
         plt.fill_between(np.arange(0, returns_mean.shape[0]-smooth+1), utils.smooth(returns_mean - w*returns_std, smooth), utils.smooth(returns_mean + w*returns_std, smooth), alpha=0.1)
     plt.legend(title="Demonstration Value")
     plt.title("Episodes' Returns during Training")
     plt.xlabel("Episode during training")
     plt.ylabel("Total Return in episode")
-    plt.ylim((-1000, 0))
+
+    if RANGE_Y is not None:
+        plt.ylim(RANGE_Y)
 
     plt.hlines(best_demostration, xmin=0, xmax=300, linewidth=0.5, color='black', linestyles='--', label='optimal trajectory')
     plt.yticks(list(plt.yticks()[0]) + [best_demostration])
     
+    dir = utils.build_data_dir(env_name)
+    outfile = os.path.join(dir, "{}.svg".format(env_name))
+    
+    plt.draw()
+    plt.savefig(outfile, format='svg', dpi=1000)
     plt.show()
 
 
-build_plot(env_name, {"chunks": [5, None], "eps_iterations": [10, None]})
+# RANGE_Y = (-1000, 0)
+RANGE_Y = None
+
+# build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]})
+build_plot("MountainCar-v0")
+

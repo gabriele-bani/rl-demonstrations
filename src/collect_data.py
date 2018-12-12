@@ -36,7 +36,6 @@ num_outputs = {
 
 batch_size = 64
 learn_rate = 1e-2
-memory = ReplayMemory(2000)
 num_hidden = 128
 seed = 33
 use_target_qnet = False
@@ -49,7 +48,7 @@ num_episodes = 170
 discount_factor = 0.99
 
 splits_lst = [20]
-eps_lst = [0, 1]
+eps_lst = [1]
 smoothing_num = 10
 stop_coeff = 5
 
@@ -79,6 +78,8 @@ for index in [0, 2, 4]:
             results = []
             for i in range(num_datapoints):
                 model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+                memory = ReplayMemory(2000)
+                
                 testing_seed = np.random.randint(0, 5000)
                 
                 print(f"Starting Backward Training with eps={eps_it}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
@@ -132,14 +133,12 @@ final_eps = 0.05
 random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
-env.reset()
-
-env.seed(seed)
 
 results = []
 for i in range(num_datapoints):
     model = QNetwork(num_inputs=num_inputs[env_name],
                     num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+    memory = ReplayMemory(2000)
     
     testing_seed = np.random.randint(0, 5000)
     print(f"Starting Training from scratch seed={testing_seed}, {i}-th run")
@@ -150,7 +149,7 @@ for i in range(num_datapoints):
                                                                                   model,
                                                                                   memory,
                                                                                   env,
-                                                                                  num_episodes,
+                                                                                  250,
                                                                                   batch_size,
                                                                                   discount_factor,
                                                                                   learn_rate,

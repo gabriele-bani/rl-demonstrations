@@ -94,9 +94,11 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             env = copy.deepcopy(environment_states[starting_state_idx])
             env.seed(int(seed + 1000 * s + 7 * i))
             state = states[starting_state_idx]
+
+            starting_return = real_returns[0] - real_returns[starting_state_idx]
             
             duration = 0
-            episode_return = 0
+            episode_return = starting_return
             disc_reward = 0
             
             current_trajectory = trajectory[:starting_state_idx]
@@ -141,10 +143,10 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             
             # print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return, real_returns[starting_state_idx]))
             # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
-            starting_return = real_returns[0] - real_returns[starting_state_idx]
+            
             # print(epsilon)
             if verbose:
-                print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
+                print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[0]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -154,7 +156,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             episode_durations.append(duration)
             returns_trends.append(episode_return)
             
-            dr = episode_return - real_returns[starting_state_idx]
+            dr = episode_return - real_returns[0]
             victory = dr >= - 0.1*abs(real_returns[starting_state_idx])
             
             victories.append(int(victory))
