@@ -64,8 +64,6 @@ env = gym.envs.make(env_name)
 
 env.seed(seed)
 
-model = QNetwork(num_inputs=num_inputs[env_name],
-                 num_hidden=num_hidden, num_outputs=num_outputs[env_name])
 # model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
 
 
@@ -76,12 +74,13 @@ for index, row in data.iterrows():
     for eps in eps_lst:
         for split in splits_lst:
             for i in range(num_datapoints):
+                model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
                 testing_seed = np.random.randint(0, 5000)
                 print(
                     f"Starting Training with eps={eps}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
                 trajectory = row.trajectory
                 seed = row.seed
-                returns = row.sum_reward
+                demostration_value = row.sum_reward
                 get_epsilon = lambda it: intial_eps - it*((intial_eps - final_eps)/eps_iterations) \
                                         if it < eps_iterations \
                                         else final_eps
@@ -108,7 +107,7 @@ for index, row in data.iterrows():
                     env_name,
                     returns_trends,
                     testing_seed,
-                    sum_reward,
+                    demostration_value,
                     split,
                     eps,
                     stop_coeff,
@@ -125,4 +124,5 @@ for index, row in data.iterrows():
                 # row["smoothing_victories"] = smoothing_victories
                 # row["train_length"] = len(returns)
                 # row["time"] = time
+
 utils.store_experiments(env_name, None, results)

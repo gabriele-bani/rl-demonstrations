@@ -11,27 +11,9 @@ import numpy as np
 
 env_name = "Maze_(15,15,42,1.0,1.0)"
 
-# env = gym.envs.make(env_name)
 env = utils.create_env(env_name)
 
-# num_inputs = {
-#     "MountainCar-v0": 2,
-#     "LunarLander-v2": 8,
-#     "CartPole-v0": 4,
-# }
-#
-# num_outputs = {
-#     "MountainCar-v0": 3,
-#     "LunarLander-v2": 4,
-#     "CartPole-v0": 2,
-# }
-#
-# batch_size = 64
-# learn_rate = 1e-3
-# memory = ReplayMemory(2000)
-# num_hidden = 128
 seed = 34
-# use_target_qnet = False
 # # whether to visualize some episodes during training
 render = False
 

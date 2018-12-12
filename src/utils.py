@@ -184,7 +184,7 @@ def chunks(l, n):
         r -= 1
 
 
-def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[int], List[Tuple], int, int, int, int, int, int]]):
+def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[int], int, int, int, int, int, int]]):
     dataframe = []
     
     time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
@@ -221,20 +221,21 @@ def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[
     return df
 
 
-def store_experiments(env_name: str, env_params, experiments: List[Tuple[List[int], List[Tuple], int, int, int, int, int, int]], filename: str = None):
+def store_experiments(env_name: str, env_params, experiments: List[Tuple[List[int], int, int, int, int, int, int]], filename: str = None):
     df = experiments_to_dataframe(env_name, env_params, experiments)
     
     dir = build_data_dir(env_name)
-    if filename is not None:
-        filename = os.path.join(dir, filename)
-    else:
-        filename = os.path.join(dir, "experiments.pkl")
     
-    if os.path.isfile(filename):
+    if filename is None:
+        filename = "experiments"
+    
+    fullpath = os.path.join(dir, "{}.pkl".format(filename))
+    
+    if os.path.isfile(fullpath):
         old_df = load_experiments(env_name, filename=filename)
         df = pd.concat([old_df, df], ignore_index=True)
         
-    df.to_pickle(filename)
+    df.to_pickle(fullpath)
     
     return df
 
