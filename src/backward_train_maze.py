@@ -91,7 +91,7 @@ def repeat_trajectory_maze(trajectory, seed, env_name):
 
 def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
                         num_splits, max_num_episodes, discount_factor,
-                        get_epsilon, render=False, Q=None):
+                        get_epsilon, render=False, Q=None, testing_seed=None, verbose=True):
     
     # Count the steps (do not reset at episode start, to compute epsilon)
     global_steps = 0
@@ -105,9 +105,13 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
     splits = utils.chunks(len(trajectory), num_splits)
     
     environment_states, states, real_returns, n_actions = repeat_trajectory_maze(trajectory, seed, env_name)
+
+    if testing_seed is not None:
+        seed = testing_seed
     
     for s, split in enumerate(splits):
-        print("Split", s)
+        if verbose:
+            print("Split", s)
         
         victories = []
 
@@ -122,8 +126,14 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
         for i in range(max_num_episodes):
             
             starting_state_idx = np.random.choice(split)
-            print("\t{}".format(starting_state_idx))
+            if verbose:
+                print("\t{}".format(starting_state_idx))
+                
             env = copy.deepcopy(environment_states[starting_state_idx])
+            # env.seed(int(seed + 1000 * s + 7 * i))
+            random.seed(int(seed + 1000 * s + 7 * i))
+            np.random.seed(int(seed + 1000 * s + 7 * i))
+            
             state = states[starting_state_idx]
             
             duration = 0
@@ -159,8 +169,9 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
                 state = next_state
             
             env.close()
-            
-            print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return,
+    
+            if verbose:
+                print("\t\teps = {}; return = {}; expected return = {}".format(epsilon, episode_return,
                                                                            real_returns[starting_state_idx]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
@@ -181,14 +192,15 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
             num_recent_victories = np.sum(victories[-smoothing_num:])
-            print("\t\tNumber of Recent Victories ", num_recent_victories)
+            if verbose:
+                print("\t\tNumber of Recent Victories ", num_recent_victories)
 
             # if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
             if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
                 # if num_recent_victories >= stop_coeff:
                 break
-        
-        print("Split", s, "finished in", i + 1, "episodes out of ", max_num_episodes)
+        if verbose:
+            print("Split", s, "finished in", i + 1, "episodes out of ", max_num_episodes)
 
     # Added
 
@@ -200,16 +212,16 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
         return initial_eps - it*((initial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
     
     Q, greedy_policy, episode_durations_final, returns_trends_final, disc_rewards_final, trajectories_final = train_maze(
-                                                                                           seed=seed,
-                                                                                           env_name=env_name,
-                                                                                           # num_samples=5,
-                                                                                           max_num_episodes=100,
-                                                                                           discount_factor=discount_factor,
-                                                                                           get_epsilon=get_epsilon,
-                                                                                           render=render,
-                                                                                            Q=Q,
-                                                                                            begin_at_step=last_split_steps
-                                                                                    )
+        seed=seed,
+        env_name=env_name,
+        max_num_episodes=100,
+        discount_factor=discount_factor,
+        get_epsilon=get_epsilon,
+        render=render,
+        Q=Q,
+        begin_at_step=last_split_steps,
+        verbose=verbose
+    )
 
         
     greedy_policy = make_greedy_policy(Q)
@@ -218,7 +230,7 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
 
 
 def train_maze(seed, env_name, max_num_episodes, discount_factor,
-                        get_epsilon, render=False, Q=None, begin_at_step=0):
+                        get_epsilon, render=False, Q=None, begin_at_step=0, verbose=True):
     
     # Count the steps (do not reset at episode start, to compute epsilon)
     global_steps = 0
@@ -279,7 +291,8 @@ def train_maze(seed, env_name, max_num_episodes, discount_factor,
         
         env.close()
         
-        print("\t\teps = {}; return = {}".format(epsilon, episode_return))
+        if verbose:
+            print("\t\teps = {}; return = {}".format(epsilon, episode_return))
         
         # saving the seed(i) is necessary for replaying the episode later
         trajectories.append((current_trajectory, seed))

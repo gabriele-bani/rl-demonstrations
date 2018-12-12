@@ -9,7 +9,7 @@ from itertools import product
 
 ROWS = 15
 COLS = 15
-SEED = 1024
+SEED = 43
 COMPLEXITY = 1
 DENSITY = 1
 
@@ -55,6 +55,19 @@ def solve_maze_complete(maze_env):
                                 policy[i + j] = policy[i + k]
     
     return -1*distance, policy
+
+def buil_trajectory(maze_env, start, end, policy, render=False):
+    done = False
+    trajectory = []
+    s = start
+    while not done and s != end:
+        a = policy[s + end]
+        new_s, r, done, _ = maze_env.step(a)
+        if render:
+            maze_env.render("plot")
+        trajectory.append((s, a, r, new_s, done))
+        s = new_s
+    return trajectory
 
 
 def suboptimal_trajectory(maze_env, values, policy, percentile=0.8, render=False):

@@ -57,7 +57,7 @@ def repeat_trajectory(trajectory, seed, env_name):
 
 def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff, smoothing_num,
                    num_splits, max_num_episodes, batch_size, discount_factor, learn_rate,
-                   get_epsilon, use_target_qnet=None, render=False, testing_seed=None):
+                   get_epsilon, use_target_qnet=None, render=False, testing_seed=None, verbose=True):
 
     optimizer = optim.Adam(model.parameters(), learn_rate)
 
@@ -82,7 +82,8 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
         seed = testing_seed
 
     for s, split in enumerate(splits):
-        print("Split", s)
+        if verbose:
+            print("Split", s)
         
         victories = []
         
@@ -142,7 +143,8 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             # print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return, real_returns[starting_state_idx]))
             starting_return = real_returns[0] - real_returns[starting_state_idx]
             # print(epsilon)
-            print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
+            if verbose:
+                print("\t{}: {}; {}/{}".format(i, starting_state_idx, episode_return + starting_return, real_returns[0]))
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
@@ -160,13 +162,15 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             # TODO - multiply it by gamma**len(trajectory till the starting point)
             disc_rewards.append(disc_reward)
             num_recent_victories = np.sum(victories[-smoothing_num:])
-            print("\t\tNumber of Recent Victories ", num_recent_victories)
+            if verbose:
+                print("\t\tNumber of Recent Victories ", num_recent_victories)
             
             # if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
             if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
             # if num_recent_victories >= stop_coeff:
                 break
         
-        print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes, ";", len(episode_durations), " episodes so far")
+        if verbose:
+            print("Split", s, "finished in", i+1, "episodes out of ", max_num_episodes, ";", len(episode_durations), " episodes so far")
         
     return model, episode_durations, returns_trends, disc_rewards, losses, trajectories

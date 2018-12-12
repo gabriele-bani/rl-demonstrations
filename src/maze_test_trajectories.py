@@ -11,12 +11,9 @@ import numpy as np
 
 env_name = "Maze_(15,15,42,1.0,1.0)"
 
-# env = gym.envs.make(env_name)
 env = utils.create_env(env_name)
 
-
 seed = 34
-# use_target_qnet = False
 # # whether to visualize some episodes during training
 render = False
 
