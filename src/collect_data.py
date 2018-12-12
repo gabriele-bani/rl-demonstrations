@@ -19,6 +19,8 @@ from PolynomialNetwork import PolynomialNetwork
 
 import utils
 
+seed_sampler = random.Random()
+
 env_name = "MountainCar-v0"
 
 
@@ -34,7 +36,7 @@ num_outputs = {
     "CartPole-v0": 2,
 }
 
-batch_size = 64
+batch_size = 128
 learn_rate = 1e-2
 num_hidden = 128
 seed = 33
@@ -44,25 +46,18 @@ render = False
 
 num_datapoints = 3
 
-num_episodes = 170
+num_episodes = 150
 discount_factor = 0.99
 
 splits_lst = [20]
-eps_lst = [1]
+eps_lst = [2]
 smoothing_num = 10
-stop_coeff = 5
+stop_coeff = 4
 
 intial_eps = 1
 final_eps = 0.05
 
-
-random.seed(seed)
-torch.manual_seed(seed)
-np.random.seed(seed)
 env = gym.envs.make(env_name)
-env.reset()
-
-env.seed(seed)
 
 # data = utils.load_trajectories(env_name)
 data = utils.load_trajectories(env_name, filename="selected_trajectories")
@@ -71,7 +66,7 @@ data.sort_values(by="sum_reward", inplace=True)
 
 results = []
 # for index, row in data.iterrows():
-for index in [0, 2, 4]:
+for index in [1, 4, 5]:
     row = data.iloc[index]
     for eps_it in eps_lst:
         for split in splits_lst:
@@ -79,8 +74,8 @@ for index in [0, 2, 4]:
             for i in range(num_datapoints):
                 model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
                 memory = ReplayMemory(2000)
-                
-                testing_seed = np.random.randint(0, 5000)
+
+                testing_seed = seed_sampler.randint(0, 5000)
                 
                 print(f"Starting Backward Training with eps={eps_it}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
                 
@@ -126,9 +121,11 @@ for index in [0, 2, 4]:
 
             utils.store_experiments(env_name, None, results)
 
-eps_iterations = 1
+eps_iterations = 100
 intial_eps = 1
 final_eps = 0.05
+
+learn_rate = 1e-3
 
 random.seed(seed)
 torch.manual_seed(seed)

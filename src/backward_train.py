@@ -168,8 +168,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
                 print("\t\tNumber of Recent Victories ", num_recent_victories)
             
             # if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
-            if len(victories) > smoothing_num and num_recent_victories >= stop_coeff:
-            # if num_recent_victories >= stop_coeff:
+            if num_recent_victories >= stop_coeff:
                 break
         
         if verbose:

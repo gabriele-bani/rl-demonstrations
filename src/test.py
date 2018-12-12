@@ -34,7 +34,7 @@ num_outputs = {
     "CartPole-v0": 2,
 }
 
-batch_size = 64
+batch_size = 128
 learn_rate = 1e-2
 memory = ReplayMemory(2000)
 num_hidden = 128
@@ -47,11 +47,11 @@ num_episodes = 150
 discount_factor = 0.99
 
 num_splits = 20
-smoothing_num = 20
-stop_coeff = 5
+smoothing_num = 10
+stop_coeff = 4
 
-eps_iterations = 1
-intial_eps = 0.5
+eps_iterations = 3
+intial_eps = 0.8
 final_eps = 0.05
 
 # alpha = np.power(final_eps/intial_eps, 1/eps_iterations)
@@ -75,12 +75,12 @@ model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_out
 # data = utils.load_trajectories(env_name)
 data = utils.load_trajectories(env_name, filename="selected_trajectories")
 
-# data.sort_values(by="sum_reward", inplace=True)
+data.sort_values(by="sum_reward", inplace=True)
 
 print(data.sum_reward)
 
 # row = data["sum_reward"].idxmax()
-row = 1
+row = 5
 
 print("Best Trajectory: {} with return {}".format(row, data.iloc[row].sum_reward))
 
@@ -112,7 +112,6 @@ model, episode_durations, returns_trends, disc_rewards, losses, trajectories = b
                                                                                        use_target_qnet=use_target_qnet,
                                                                                        render=render
                                                                                 )
-
 print("Trained in", len(episode_durations), " episodes")
 
 print("Repeating the last training episode")
@@ -124,8 +123,15 @@ play_episodes(env, model, n=5, seed=trajectories[-1][1], render=True)
 
 print("Fine-training the model")
 eps_iterations = 10
-intial_eps = 0.1
+intial_eps = 0.8
 final_eps = 0.01
+num_episodes = 30
+
+learn_rate = 1e-2
+# eps_iterations = 100
+# intial_eps = 1
+# final_eps = 0.05
+# num_episodes = 250
 
 def get_epsilon(it):
     return intial_eps - it*((intial_eps - final_eps)/eps_iterations) if it < eps_iterations else final_eps
@@ -134,7 +140,7 @@ episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(tr
                                                                               model,
                                                                               memory,
                                                                               env,
-                                                                              20,
+                                                                              num_episodes,
                                                                               batch_size,
                                                                               discount_factor,
                                                                               learn_rate,
