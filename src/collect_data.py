@@ -43,17 +43,17 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_episodes = 150
-num_datapoints = 50
+num_datapoints = 3
+
+num_episodes = 170
 discount_factor = 0.99
 
-splits_lst = [5, 10, 20]
-eps_lst = [0, 10, 50]
-smoothing_num = 20
+splits_lst = [20]
+eps_lst = [0, 1]
+smoothing_num = 10
 stop_coeff = 5
 
-eps_iterations = 1
-intial_eps = 0.5
+intial_eps = 1
 final_eps = 0.05
 
 
@@ -61,29 +61,38 @@ random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
 env = gym.envs.make(env_name)
+env.reset()
 
 env.seed(seed)
 
-# model = PolynomialNetwork(num_outputs=num_outputs[env_name], poly_order=2)
-
-
 # data = utils.load_trajectories(env_name)
 data = utils.load_trajectories(env_name, filename="selected_trajectories")
+
+data.sort_values(by="sum_reward", inplace=True)
+
 results = []
-for index, row in data.iterrows():
-    for eps in eps_lst:
+# for index, row in data.iterrows():
+for index in [0, 2, 4]:
+    row = data.iloc[index]
+    for eps_it in eps_lst:
         for split in splits_lst:
+            results = []
             for i in range(num_datapoints):
                 model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
                 testing_seed = np.random.randint(0, 5000)
-                print(
-                    f"Starting Training with eps={eps}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
+                
+                print(f"Starting Backward Training with eps={eps_it}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
+                
                 trajectory = row.trajectory
                 seed = row.seed
-                demostration_value = row.sum_reward
-                get_epsilon = lambda it: intial_eps - it*((intial_eps - final_eps)/eps_iterations) \
-                                        if it < eps_iterations \
-                                        else final_eps
+                demonstration_value = row.sum_reward
+
+                random.seed(seed)
+                torch.manual_seed(seed)
+                np.random.seed(seed)
+                
+                get_epsilon = lambda it: intial_eps - it*((intial_eps - final_eps)/eps_it)  if it < eps_it  else final_eps
+                
                 model, episode_durations, returns_trends, disc_rewards, losses, trajectories = backward_train(
                     train=train_QNet_true_gradient,
                     model=model,
@@ -101,28 +110,62 @@ for index, row in data.iterrows():
                     get_epsilon=get_epsilon,
                     use_target_qnet=use_target_qnet,
                     render=render,
-                    testing_seed=testing_seed
+                    testing_seed=testing_seed,
+                    verbose=False
                 )
                 results.append((
-                    env_name,
                     returns_trends,
                     testing_seed,
-                    demostration_value,
+                    demonstration_value,
                     split,
-                    eps,
+                    eps_it,
                     stop_coeff,
                     smoothing_num
                 ))
-                # row["env_name"] = env_name
-                # row["env_params"] = env_params
-                # row["returns"] = returns
-                # row["seed"] = seed
-                # row["demonstration_value"] = demonstration_value
-                # row["chunks"] = chunks
-                # row["eps_iterations"] = eps_iterations
-                # row["stop_victories"] = stop_victories
-                # row["smoothing_victories"] = smoothing_victories
-                # row["train_length"] = len(returns)
-                # row["time"] = time
+
+            utils.store_experiments(env_name, None, results)
+
+eps_iterations = 1
+intial_eps = 1
+final_eps = 0.05
+
+random.seed(seed)
+torch.manual_seed(seed)
+np.random.seed(seed)
+env.reset()
+
+env.seed(seed)
+
+results = []
+for i in range(num_datapoints):
+    model = QNetwork(num_inputs=num_inputs[env_name],
+                    num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+    
+    testing_seed = np.random.randint(0, 5000)
+    print(f"Starting Training from scratch seed={testing_seed}, {i}-th run")
+    
+    get_epsilon = lambda it: 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
+    
+    episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
+                                                                                  model,
+                                                                                  memory,
+                                                                                  env,
+                                                                                  num_episodes,
+                                                                                  batch_size,
+                                                                                  discount_factor,
+                                                                                  learn_rate,
+                                                                                  get_epsilon=get_epsilon,
+                                                                                  use_target_qnet=use_target_qnet,
+                                                                                  seed=testing_seed,
+                                                                                  render=render)
+    results.append((
+        rewards,
+        testing_seed,
+        None,
+        None,
+        None,
+        None,
+        None
+    ))
 
 utils.store_experiments(env_name, None, results)

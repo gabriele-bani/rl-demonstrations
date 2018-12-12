@@ -12,7 +12,7 @@ import copy
 
 # @profile
 def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_factor, learn_rate, get_epsilon,
-                 use_target_qnet=None, render=False):
+                 use_target_qnet=None, seed=0, render=False):
 
     optimizer = optim.Adam(model.parameters(), learn_rate)
     if use_target_qnet != None:
@@ -40,10 +40,11 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
 
         if use_target_qnet != None and i % 5 == 0:
             target_model = copy.deepcopy(model)
-
-        random.seed(i)
-        torch.manual_seed(i)
-        env.seed(i)
+        
+        exp_seed = seed + i
+        random.seed(exp_seed)
+        torch.manual_seed(exp_seed)
+        env.seed(exp_seed)
 
         s = env.reset()
         env.render() if render and i % 1 == 0 else None
@@ -87,8 +88,8 @@ def run_episodes(train, model, memory, env, num_episodes, batch_size, discount_f
         # xs.append(max_x)
         # ys.append(max_y)
         # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
-        # saving the seed(i) is necessary for replaying the episode later
-        trajectories.append((trajectory, i))
+        # saving the seed(exp_seed) is necessary for replaying the episode later
+        trajectories.append((trajectory, exp_seed))
 
         losses.append(loss)
         episode_durations.append(duration)
