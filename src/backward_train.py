@@ -57,7 +57,7 @@ def repeat_trajectory(trajectory, seed, env_name):
 
 def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff, smoothing_num,
                    num_splits, max_num_episodes, batch_size, discount_factor, learn_rate,
-                   get_epsilon, use_target_qnet=None, render=False):
+                   get_epsilon, use_target_qnet=None, render=False, testing_seed=None):
 
     optimizer = optim.Adam(model.parameters(), learn_rate)
 
@@ -78,6 +78,9 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
 
     environment_states, states, real_returns = repeat_trajectory(trajectory, seed, env_name)
     
+    if testing_seed is not None:
+        seed = testing_seed
+
     for s, split in enumerate(splits):
         print("Split", s)
         
