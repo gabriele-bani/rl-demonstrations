@@ -36,13 +36,13 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_datapoints = 20
+num_datapoints = 5
 
 num_episodes = 150
 discount_factor = 0.99
 
-splits_lst = [20]
-eps_lst = [1]
+splits_lst = [15, 20]
+eps_lst = [1, 20]
 smoothing_num = 10
 stop_coeff = 4
 

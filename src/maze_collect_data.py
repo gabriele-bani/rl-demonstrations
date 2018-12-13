@@ -13,16 +13,15 @@ env_name = "Maze_(15,15,42,1.0,1.0)"
 # whether to visualize some episodes during training
 render = False
 
-num_datapoints = 10
+num_datapoints = 15
 
 discount_factor = 0.99
 
 num_episodes = 100
 
-splits_lst = [5, 8, 13, 17]
+splits_lst = [1, 5, 8, 13, 17]
 
-eps_lst = [0, 10]
-# eps_lst = [10]
+eps_lst = [0, 10, 50]
 
 smoothing_num = 15
 stop_coeff = 3

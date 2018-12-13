@@ -55,8 +55,8 @@ def build_plot(env_name, selection_conditions: Dict =None, w=0.5):
     experiments.demonstration_value.fillna("From Scratch", inplace=True)
     
     experiments["short"] = experiments.returns.apply(lambda x: x[-3:])
-    print(experiments[["demonstration_value", "seed", "train_length", "short"]])
-    # print(experiments[["demonstration_value", "chunks", "eps_iterations"]])
+    # print(experiments[["demonstration_value", "seed", "train_length", "short"]])
+    print(experiments[["demonstration_value", "chunks", "eps_iterations"]])
     
     statistics = experiments.groupby(by="demonstration_value").apply(build_line).reset_index()
 
@@ -105,15 +105,15 @@ def build_plot(env_name, selection_conditions: Dict =None, w=0.5):
     plt.show()
 
 
-RANGE_Y = (-1500, 0)
-# RANGE_Y = None
-RANGE_X = None
-# RANGE_X = 1500
+# RANGE_Y = (-1500, 0)
+RANGE_Y = None
+# RANGE_X = None
+RANGE_X = 1500
 
 if RANGE_X is not None:
     XMAX = RANGE_X
 
 
-build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [0, None]})
-# build_plot("MountainCar-v0")
+# build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]})
+build_plot("MountainCar-v0", {"chunks": [20, None], "eps_iterations": [20, None]})
 
