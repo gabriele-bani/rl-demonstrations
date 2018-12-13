@@ -81,6 +81,10 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
     if testing_seed is not None:
         seed = testing_seed
 
+        random.seed(testing_seed)
+        torch.manual_seed(testing_seed)
+        np.random.seed(testing_seed)
+
     for s, split in enumerate(splits):
         if verbose:
             print("Split", s)
@@ -92,7 +96,10 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             starting_state_idx = np.random.choice(split)
             # print("\t{}".format(starting_state_idx))
             env = copy.deepcopy(environment_states[starting_state_idx])
-            env.seed(int(seed + 1000 * s + 7 * i))
+            
+            exp_seed = int(seed + 1000 * s + 7 * i)
+            env.seed(exp_seed)
+            
             state = states[starting_state_idx]
 
             starting_return = real_returns[0] - real_returns[starting_state_idx]
@@ -150,7 +157,7 @@ def backward_train(train, model, memory, trajectory, seed, env_name, stop_coeff,
             
             # TODO: save it in a dictionary (for example, based on reward or duration) or do it in post process
             # saving the seed(i) is necessary for replaying the episode later
-            trajectories.append((current_trajectory, seed))
+            trajectories.append((current_trajectory, exp_seed))
 
             losses.append(loss)
             episode_durations.append(duration)

@@ -1,21 +1,13 @@
-import os
+
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
 import torch
-from torch import nn
-import torch.nn.functional as F
-from torch import optim
-from tqdm import tqdm as _tqdm
-from train_QNet import train_QNet, train_QNet_true_gradient
+from train_QNet import train_QNet_true_gradient
 from run_episodes import run_episodes
 from memory import ReplayMemory
 from QNetwork import QNetwork
 import random
 import gym
-from replay import play_episodes, play_trajectory
-from backward_train import backward_train, repeat_trajectory
-from PolynomialNetwork import PolynomialNetwork
+from backward_train import backward_train
 
 import utils
 
@@ -39,18 +31,18 @@ num_outputs = {
 batch_size = 128
 learn_rate = 1e-2
 num_hidden = 128
-seed = 33
+# seed = 33
 use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_datapoints = 3
+num_datapoints = 20
 
 num_episodes = 150
 discount_factor = 0.99
 
 splits_lst = [20]
-eps_lst = [2]
+eps_lst = [1]
 smoothing_num = 10
 stop_coeff = 4
 
@@ -66,28 +58,30 @@ data.sort_values(by="sum_reward", inplace=True)
 
 results = []
 # for index, row in data.iterrows():
-for index in [1, 4, 5]:
-    row = data.iloc[index]
-    for eps_it in eps_lst:
-        for split in splits_lst:
-            results = []
-            for i in range(num_datapoints):
+for i in range(num_datapoints):
+    
+    intial_eps = 1
+    final_eps = 0.05
+    learn_rate = 1e-2
+    
+    for index in [1, 4, 5]:
+        row = data.iloc[index]
+        for eps_it in eps_lst:
+            for split in splits_lst:
+            
+                testing_seed = seed_sampler.randint(0, 5000)
+                
+                torch.manual_seed(testing_seed)
                 model = QNetwork(num_inputs=num_inputs[env_name], num_hidden=num_hidden, num_outputs=num_outputs[env_name])
                 memory = ReplayMemory(2000)
-
-                testing_seed = seed_sampler.randint(0, 5000)
                 
                 print(f"Starting Backward Training with eps={eps_it}, num_splits={split}, row={index}, seed={testing_seed}, {i}-th run")
                 
                 trajectory = row.trajectory
                 seed = row.seed
                 demonstration_value = row.sum_reward
-
-                random.seed(seed)
-                torch.manual_seed(seed)
-                np.random.seed(seed)
                 
-                get_epsilon = lambda it: intial_eps - it*((intial_eps - final_eps)/eps_it)  if it < eps_it  else final_eps
+                get_epsilon = lambda it: intial_eps - it*((intial_eps - final_eps)/eps_it) if it < eps_it else final_eps
                 
                 model, episode_durations, returns_trends, disc_rewards, losses, trajectories = backward_train(
                     train=train_QNet_true_gradient,
@@ -109,7 +103,7 @@ for index in [1, 4, 5]:
                     testing_seed=testing_seed,
                     verbose=False
                 )
-                results.append((
+                results = [(
                     returns_trends,
                     testing_seed,
                     demonstration_value,
@@ -117,36 +111,35 @@ for index in [1, 4, 5]:
                     eps_it,
                     stop_coeff,
                     smoothing_num
-                ))
+                )]
 
-            utils.store_experiments(env_name, None, results)
+                utils.store_experiments(env_name, None, results)
 
-eps_iterations = 100
-intial_eps = 1
-final_eps = 0.05
+    
+    
+    testing_seed = seed_sampler.randint(0, 5000)
+    
+    random.seed(testing_seed)
+    torch.manual_seed(testing_seed)
+    np.random.seed(testing_seed)
 
-learn_rate = 1e-3
-
-random.seed(seed)
-torch.manual_seed(seed)
-np.random.seed(seed)
-
-results = []
-for i in range(num_datapoints):
+    eps_iterations = 150
+    intial_eps = 1
+    final_eps = 0.05
+    learn_rate = 1e-3
+    get_epsilon = lambda it: 1 - it * ((1 - final_eps) / eps_iterations) if it < eps_iterations else final_eps
+    
     model = QNetwork(num_inputs=num_inputs[env_name],
                     num_hidden=num_hidden, num_outputs=num_outputs[env_name])
     memory = ReplayMemory(2000)
     
-    testing_seed = np.random.randint(0, 5000)
     print(f"Starting Training from scratch seed={testing_seed}, {i}-th run")
-    
-    get_epsilon = lambda it: 1 - it*((1 - final_eps)/eps_iterations) if it < eps_iterations else final_eps
     
     episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
                                                                                   model,
                                                                                   memory,
                                                                                   env,
-                                                                                  250,
+                                                                                  500,
                                                                                   batch_size,
                                                                                   discount_factor,
                                                                                   learn_rate,
@@ -154,7 +147,7 @@ for i in range(num_datapoints):
                                                                                   use_target_qnet=use_target_qnet,
                                                                                   seed=testing_seed,
                                                                                   render=render)
-    results.append((
+    results = [(
         rewards,
         testing_seed,
         None,
@@ -162,6 +155,6 @@ for i in range(num_datapoints):
         None,
         None,
         None
-    ))
+    )]
 
-utils.store_experiments(env_name, None, results)
+    utils.store_experiments(env_name, None, results)

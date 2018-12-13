@@ -59,7 +59,7 @@ def repeat_trajectory_maze(trajectory, seed, env_name):
     
     random.seed(seed)
     torch.manual_seed(seed)
-    env.seed(seed)
+    # env.seed(seed)
 
     env.reset()
 
@@ -108,6 +108,10 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
 
     if testing_seed is not None:
         seed = testing_seed
+
+        random.seed(testing_seed)
+        torch.manual_seed(testing_seed)
+        np.random.seed(testing_seed)
     
     for s, split in enumerate(splits):
         if verbose:
@@ -130,9 +134,6 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
                 print("\t{}".format(starting_state_idx))
                 
             env = copy.deepcopy(environment_states[starting_state_idx])
-            # env.seed(int(seed + 1000 * s + 7 * i))
-            random.seed(int(seed + 1000 * s + 7 * i))
-            np.random.seed(int(seed + 1000 * s + 7 * i))
             
             state = states[starting_state_idx]
             
@@ -222,7 +223,6 @@ def backward_train_maze(trajectory, seed, env_name, stop_coeff, smoothing_num,
         begin_at_step=last_split_steps,
         verbose=verbose
     )
-
         
     greedy_policy = make_greedy_policy(Q)
     
@@ -248,7 +248,6 @@ def train_maze(seed, env_name, max_num_episodes, discount_factor,
     assert seed == int(seed)
     seed = int(seed)
     random.seed(seed)
-    # env.seed(seed)  # results in: WARN: Could not seed environment <MazeEnv instance>
     
     if Q is None:
         Q = defaultdict(lambda: np.zeros(n_actions))

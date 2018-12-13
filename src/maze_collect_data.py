@@ -13,7 +13,7 @@ env_name = "Maze_(15,15,42,1.0,1.0)"
 # whether to visualize some episodes during training
 render = False
 
-num_datapoints = 3
+num_datapoints = 10
 
 discount_factor = 0.99
 
@@ -41,16 +41,15 @@ optimal_trajectory = data.iloc[data["sum_reward"].idxmax()]
 bad_trajectory = data_bad.iloc[-1]
 
 
-trajectories = [suboptimal_trajectory, optimal_trajectory, bad_trajectory]
+demonstrations = [suboptimal_trajectory, optimal_trajectory, bad_trajectory]
 
 results = []
-for idx, row in enumerate(trajectories):
+for i in range(num_datapoints):
     
-    print(idx, row.sum_reward)
-    
-    for eps_it in eps_lst:
-        for split in splits_lst:
-            for i in range(num_datapoints):
+    for idx, row in enumerate(demonstrations):
+        print(idx, row.sum_reward)
+        for eps_it in eps_lst:
+            for split in splits_lst:
                 
                 testing_seed = seed_sampler.randint(0, 5000)
 
@@ -64,7 +63,7 @@ for idx, row in enumerate(trajectories):
                 random.seed(seed)
                 torch.manual_seed(seed)
                 np.random.seed(seed)
-                
+
                 Q, greedy_policy, episode_durations, returns_trends, disc_rewards, trajectories = backward_train_maze(
                     trajectory=trajectory,
                     seed=seed,
@@ -79,7 +78,7 @@ for idx, row in enumerate(trajectories):
                     testing_seed=testing_seed,
                     verbose=False
                 )
-                results.append((
+                results =[(
                     returns_trends,
                     testing_seed,
                     demostration_value,
@@ -87,10 +86,11 @@ for idx, row in enumerate(trajectories):
                     eps_it,
                     stop_coeff,
                     smoothing_num
-                ))
+                )]
 
-for i in range(num_datapoints):
-    testing_seed = np.random.randint(0, 5000)
+                utils.store_experiments(env_name, env.get_params(), results)
+
+    testing_seed = seed_sampler.randint(0, 5000)
 
     print(f"Starting Training from Scratch with seed={testing_seed}, {i}-th run")
 
@@ -109,7 +109,7 @@ for i in range(num_datapoints):
         render=render,
         verbose=False
     )
-    results.append((
+    results = [(
         returns_trends_scratch,
         testing_seed,
         None,
@@ -117,7 +117,7 @@ for i in range(num_datapoints):
         None,
         None,
         None
-    ))
+    )]
 
 
-utils.store_experiments(env_name, env.get_params(), results)
+    utils.store_experiments(env_name, env.get_params(), results)
