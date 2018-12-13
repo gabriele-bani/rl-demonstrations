@@ -105,14 +105,15 @@ def build_plot(env_name, selection_conditions: Dict =None, w=0.5):
     plt.show()
 
 
-# RANGE_Y = (-1000, 0)
-RANGE_Y = None
+RANGE_Y = (-1500, 0)
+# RANGE_Y = None
 RANGE_X = None
+# RANGE_X = 1500
 
 if RANGE_X is not None:
     XMAX = RANGE_X
 
 
-# build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]})
-build_plot("MountainCar-v0")
+build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [0, None]})
+# build_plot("MountainCar-v0")
 

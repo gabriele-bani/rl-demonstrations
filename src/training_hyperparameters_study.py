@@ -4,25 +4,10 @@ from itertools import zip_longest
 import matplotlib.pyplot as plt
 import pandas as pd
 from typing import Dict
+import os
 
 # plt.xkcd()
 
-# env_name = "MountainCar-v0"
-
-env_name = "Maze_(15,15,42,1.0,1.0)"
-
-
-# row["env_name"] = env_name
-# row["env_params"] = env_params
-# row["returns"] = returns
-# row["seed"] = seed
-# row["demonstration_value"] = demonstration_value
-# row["chunks"] = chunks
-# row["eps_iterations"] = eps_iterations
-# row["stop_victories"] = stop_victories
-# row["smoothing_victories"] = smoothing_victories
-# row["train_length"] = len(returns)
-# row["time"] = time
 
 def build_line(group):
     returns_mean = []
@@ -81,7 +66,14 @@ def build_plot(env_name, selection_conditions: Dict =None, w=0.5):
     plt.title("Training Hyperparameters Study")
     plt.xlabel("Number of Splits in Training")
     plt.ylabel("Number of Episodes seen during Training")
+    
+    dir = utils.build_data_dir(env_name)
+    outfile = os.path.join(dir, "{}_hyperparams.svg".format(env_name))
+
+    plt.draw()
+    plt.savefig(outfile, format='svg', dpi=1000)
     plt.show()
 
 
-build_plot(env_name, {"demonstration_value": [-67]})
+build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]})
+# build_plot("MountainCar-v0")
