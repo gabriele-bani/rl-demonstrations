@@ -115,7 +115,7 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
     plt.show()
 
 
-# build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]}, MAXx=None, MINy=-1500, MAXy=0)
-#
+build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]}, MAXx=None, MINy=-1500, MAXy=0)
+
 build_plot("MountainCar-v0", {"chunks": [20, None], "eps_iterations": [100, None]}, MAXx=3750)
 

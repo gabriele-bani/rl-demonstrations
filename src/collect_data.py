@@ -89,7 +89,7 @@ for i in range(num_datapoints):
     learn_rate, num_episodes, stop_coeff, final_eps, memory_size = parameters[env_name]
     
     # for index in [1, 4, 5]:
-    for index in [2]:
+    for index in [0, 1, 2]:
         row = data.iloc[index]
         for eps_it in eps_lst:
             for split in splits_lst:
@@ -147,50 +147,50 @@ for i in range(num_datapoints):
 
                 utils.store_experiments(env_name, None, results)
     
-    # testing_seed = seed_sampler.randint(0, 5000)
-    #
-    # random.seed(testing_seed)
-    # torch.manual_seed(testing_seed)
-    # np.random.seed(testing_seed)
-    #
-    # eps_iterations = 150
-    # intial_eps = 1
-    # final_eps = 0.05
-    # learn_rate = 1e-3
-    # get_epsilon = lambda it: 1 - it * ((1 - final_eps) / eps_iterations) if it < eps_iterations else final_eps
-    #
-    # model = QNetwork(num_inputs=num_inputs[env_name],
-    #                 num_hidden=num_hidden, num_outputs=num_outputs[env_name])
-    # memory = ReplayMemory(memory_size)
-    #
-    # print(f"Starting Training from scratch seed={testing_seed}, {i}-th run")
-    #
-    # episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
-    #                                                                               model,
-    #                                                                               memory,
-    #                                                                               env,
-    #                                                                               500,
-    #                                                                               batch_size,
-    #                                                                               discount_factor,
-    #                                                                               learn_rate,
-    #                                                                               get_epsilon=get_epsilon,
-    #                                                                               use_target_qnet=use_target_qnet,
-    #                                                                               seed=testing_seed,
-    #                                                                               render=render)
-    # tests = [play_episodes(env,
-    #                       model,
-    #                       1,
-    #                       seed_sampler.randint(0, 5000),
-    #                       False, False, False)[0][0] for _ in range(10)]
-    # results = [(
-    #     rewards,
-    #     testing_seed,
-    #     None,
-    #     None,
-    #     None,
-    #     None,
-    #     None,
-    #     tests
-    # )]
-    #
-    # utils.store_experiments(env_name, None, results)
+    testing_seed = seed_sampler.randint(0, 5000)
+
+    random.seed(testing_seed)
+    torch.manual_seed(testing_seed)
+    np.random.seed(testing_seed)
+
+    eps_iterations = 150
+    intial_eps = 1
+    final_eps = 0.05
+    learn_rate = 1e-3
+    get_epsilon = lambda it: 1 - it * ((1 - final_eps) / eps_iterations) if it < eps_iterations else final_eps
+
+    model = QNetwork(num_inputs=num_inputs[env_name],
+                    num_hidden=num_hidden, num_outputs=num_outputs[env_name])
+    memory = ReplayMemory(memory_size)
+
+    print(f"Starting Training from scratch seed={testing_seed}, {i}-th run")
+
+    episode_durations, rewards, disc_rewards, losses, trajectories = run_episodes(train_QNet_true_gradient,
+                                                                                  model,
+                                                                                  memory,
+                                                                                  env,
+                                                                                  500,
+                                                                                  batch_size,
+                                                                                  discount_factor,
+                                                                                  learn_rate,
+                                                                                  get_epsilon=get_epsilon,
+                                                                                  use_target_qnet=use_target_qnet,
+                                                                                  seed=testing_seed,
+                                                                                  render=render)
+    tests = [play_episodes(env,
+                          model,
+                          1,
+                          seed_sampler.randint(0, 5000),
+                          False, False, False)[0][0] for _ in range(10)]
+    results = [(
+        rewards,
+        testing_seed,
+        None,
+        None,
+        None,
+        None,
+        None,
+        tests
+    )]
+
+    utils.store_experiments(env_name, None, results)
