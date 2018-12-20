@@ -65,7 +65,7 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
     #
     # experiments = pd.DataFrame(experiments)
 
-    experiments = utils.load_experiments(env_name, "exp")
+    experiments = utils.load_experiments(env_name)
 
     print(experiments[["demonstration_value", "chunks", "eps_iterations"]])
     
@@ -165,4 +165,4 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
 #
 # build_plot("MountainCar-v0", {"chunks": [15, None], "eps_iterations": [20, None]}, MAXx=600)
 
-build_plot("LunarLander-v2", {"chunks": [30, None], "eps_iterations": [20, None]}, MAXx=1100)
+build_plot("LunarLander-v2", {"chunks": [30, None], "eps_iterations": [20, None]}, MAXx=1100, MINy=-400)
