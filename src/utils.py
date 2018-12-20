@@ -209,10 +209,14 @@ def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[
         row["stop_victories"] = stop_victories
         # number of episodes to consider to count the victories (None if trained from scratch, i.e. no demonstrations provided)
         row["smoothing_victories"] = smoothing_victories
+
+        row["tests"] = tests
         
         row["train_length"] = len(returns)
-        
+
         row["time"] = time
+
+        
         
         dataframe.append(row)
     
