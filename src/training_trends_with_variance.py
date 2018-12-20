@@ -118,7 +118,7 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
         longest_train = max(longest_train, length)
 
         if row.label != "From Scratch":
-            label = "{} (G={})".format(row.label, row.demonstration_value)
+            label = "{} (G={:.2f})".format(row.label, row.demonstration_value)
         else:
             label = row.label
         
@@ -161,8 +161,8 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
     plt.show()
 
 
-build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]}, MAXx=None, MINy=-1500, MAXy=0)
-
-build_plot("MountainCar-v0", {"chunks": [15, None], "eps_iterations": [20, None]}, MAXx=600)
+# build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]}, MAXx=None, MINy=-1500, MAXy=0)
+#
+# build_plot("MountainCar-v0", {"chunks": [15, None], "eps_iterations": [20, None]}, MAXx=600)
 
 build_plot("LunarLander-v2", {"chunks": [30, None], "eps_iterations": [20, None]}, MAXx=1100, MINy=-400)
