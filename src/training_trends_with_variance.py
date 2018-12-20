@@ -165,4 +165,4 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
 #
 # build_plot("MountainCar-v0", {"chunks": [15, None], "eps_iterations": [20, None]}, MAXx=600)
 
-build_plot("LunarLander", {"chunks": [30, None], "eps_iterations": [10, None]}, MAXx=600)
+build_plot("LunarLander-v2", {"chunks": [30, None], "eps_iterations": [10, None]}, MAXx=600)

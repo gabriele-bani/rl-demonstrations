@@ -69,8 +69,8 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
     plt.show()
 
 
-# build_plot("LunarLander", target_column="train_length")
-# build_plot("LunarLander", target_column="return")
+# build_plot("LunarLander-v2", target_column="train_length")
+# build_plot("LunarLander-v2", target_column="return")
 #
 build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="return")
 build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="train_length")
