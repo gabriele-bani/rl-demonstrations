@@ -20,9 +20,10 @@ def play_episodes(env, model, n=20, seed=34, render=True, maze=False, plotting=T
 
     assert seed == int(seed)
     seed = int(seed)
-    rewards = []
+    
+    returns = []
     for i in range(n):
-        env.seed(seed + i)
+        env.seed(seed + 3643*i)
         state = env.reset()
         
         if render:
@@ -46,16 +47,18 @@ def play_episodes(env, model, n=20, seed=34, render=True, maze=False, plotting=T
             if render:
                 env.render()
                 time.sleep(frame_time)
-        rewards.append(tot_r)
+        returns.append(tot_r)
         episode_durations.append(steps)
         env.close()
         print("Episode duration:", steps)
     
     if plotting:
         plt.figure()
-        plt.plot(rewards)
+        plt.plot(returns)
         plt.title('Episode durations')
         plt.show()
+    
+    return returns, episode_durations
 
 
 # trajectories are in the form [(s, a, r, s'), ...]

@@ -303,3 +303,42 @@ def train_maze(seed, env_name, max_num_episodes, discount_factor,
     greedy_policy = make_greedy_policy(Q)
     
     return Q, greedy_policy, episode_durations, returns_trends, disc_rewards, trajectories
+
+
+def run_maze(seed, env_name, discount_factor, epsilon, Q, render=False):
+    
+    env = utils.create_env(env_name)
+    n_actions = env.action_space.n
+    
+    assert seed == int(seed)
+    seed = int(seed)
+    random.seed(seed)
+    
+    # The policy we're following
+    policy = make_epsilon_greedy_policy(Q, epsilon, n_actions)
+    
+    state = env.reset()
+    
+    duration = 0
+    episode_return = 0
+    disc_reward = 0
+    env.render() if render else None
+    
+    while True and duration < 1500:
+        a = np.argmax(np.random.multinomial(1, policy(state)))
+        
+        next_state, r, done, _ = env.step(a)
+        env.render() if render else None
+        
+        if done:
+            break
+        
+        duration += 1
+        episode_return += r
+        disc_reward += (discount_factor ** duration) * r
+        
+        state = next_state
+        
+    env.close()
+    
+    return episode_return, disc_reward, duration

@@ -184,12 +184,12 @@ def chunks(l, n):
         r -= 1
 
 
-def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[int], int, int, int, int, int, int]]):
+def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[int], int, int, int, int, int, int, List[int]]]):
     dataframe = []
     
     time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
     
-    for returns, seed, demonstration_value, chunks, eps_iterations, stop_victories, smoothing_victories in experiments:
+    for returns, seed, demonstration_value, chunks, eps_iterations, stop_victories, smoothing_victories, tests in experiments:
         row = {}
         
         row["env_name"] = env_name
@@ -221,7 +221,7 @@ def experiments_to_dataframe(env_name, env_params, experiments: List[Tuple[List[
     return df
 
 
-def store_experiments(env_name: str, env_params, experiments: List[Tuple[List[int], int, int, int, int, int, int]], filename: str = None):
+def store_experiments(env_name: str, env_params, experiments: List[Tuple[List[int], int, int, int, int, int, int, List[int]]], filename: str = None):
     df = experiments_to_dataframe(env_name, env_params, experiments)
     
     dir = build_data_dir(env_name)

@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import random
-from backward_train_maze import backward_train_maze, train_maze
+from backward_train_maze import backward_train_maze, train_maze, run_maze
 
 import utils
 
@@ -19,9 +19,9 @@ discount_factor = 0.99
 
 num_episodes = 100
 
-splits_lst = [1, 5, 8, 13, 17]
+splits_lst = [1, 5, 8, 13, 17, 20]
 
-eps_lst = [0, 10, 50]
+eps_lst = [0, 10, 30, 50, 100]
 
 smoothing_num = 15
 stop_coeff = 3
@@ -77,14 +77,18 @@ for i in range(num_datapoints):
                     testing_seed=testing_seed,
                     verbose=False
                 )
-                results =[(
+                
+                tests = [run_maze(seed_sampler.randint(0, 5000), env_name, discount_factor, 0., Q, False)[0] for _ in range(10)]
+                
+                results = [(
                     returns_trends,
                     testing_seed,
                     demostration_value,
                     split,
                     eps_it,
                     stop_coeff,
-                    smoothing_num
+                    smoothing_num,
+                    tests
                 )]
 
                 utils.store_experiments(env_name, env.get_params(), results)
@@ -108,6 +112,7 @@ for i in range(num_datapoints):
         render=render,
         verbose=False
     )
+    tests = [run_maze(seed_sampler.randint(0, 5000), env_name, discount_factor, 0., Q_scratch, False)[0] for _ in range(10)]
     results = [(
         returns_trends_scratch,
         testing_seed,
@@ -115,8 +120,8 @@ for i in range(num_datapoints):
         None,
         None,
         None,
-        None
+        None,
+        tests
     )]
-
 
     utils.store_experiments(env_name, env.get_params(), results)

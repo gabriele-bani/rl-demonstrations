@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from train_QNet import train_QNet_true_gradient
 from run_episodes import run_episodes
+from replay import play_episodes
 from memory import ReplayMemory
 from QNetwork import QNetwork
 import random
@@ -36,13 +37,14 @@ use_target_qnet = False
 # whether to visualize some episodes during training
 render = False
 
-num_datapoints = 5
+num_datapoints = 15
 
 num_episodes = 150
 discount_factor = 0.99
 
-splits_lst = [15, 20]
-eps_lst = [1, 20]
+splits_lst = [1, 5, 10, 15, 20] #, 25]
+eps_lst = [1, 20, 50, 100]
+
 smoothing_num = 10
 stop_coeff = 4
 
@@ -103,6 +105,12 @@ for i in range(num_datapoints):
                     testing_seed=testing_seed,
                     verbose=False
                 )
+
+                tests = [play_episodes(env,
+                                       model,
+                                       1,
+                                       seed_sampler.randint(0, 5000),
+                                       False, False, False)[0][0] for _ in range(10)]
                 results = [(
                     returns_trends,
                     testing_seed,
@@ -110,12 +118,11 @@ for i in range(num_datapoints):
                     split,
                     eps_it,
                     stop_coeff,
-                    smoothing_num
+                    smoothing_num,
+                    tests
                 )]
 
                 utils.store_experiments(env_name, None, results)
-
-    
     
     testing_seed = seed_sampler.randint(0, 5000)
     
@@ -147,6 +154,11 @@ for i in range(num_datapoints):
                                                                                   use_target_qnet=use_target_qnet,
                                                                                   seed=testing_seed,
                                                                                   render=render)
+    tests = [play_episodes(env,
+                          model,
+                          1,
+                          seed_sampler.randint(0, 5000),
+                          False, False, False)[0][0] for _ in range(10)]
     results = [(
         rewards,
         testing_seed,
@@ -154,7 +166,8 @@ for i in range(num_datapoints):
         None,
         None,
         None,
-        None
+        None,
+        tests
     )]
 
     utils.store_experiments(env_name, None, results)
