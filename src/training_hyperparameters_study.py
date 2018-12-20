@@ -12,13 +12,14 @@ import os
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
+
 def build_plot(env_name, selection_conditions: Dict =None, target_column = "train_length"):
 
     w = 1
     
     experiments = utils.load_experiments(env_name)
     
-    experiments["return"] = experiments.returns.apply(lambda x: x[-1])
+    experiments["return"] = experiments.returns.apply(lambda x: np.mean(x[-10:]))
     
     print(experiments)
     
@@ -28,7 +29,9 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
         for column, values in selection_conditions.items():
             experiments = experiments[experiments[column].isin(values)]
     
-    statistics = experiments.groupby(by=["chunks", "eps_iterations"])[target_column].agg(["mean", "std"]).reset_index()
+    statistics = experiments.groupby(by=["chunks", "eps_iterations"])[target_column].agg(["mean", "std", "size"]).reset_index()
+    
+    print(statistics)
     
     plt.figure()
     
@@ -48,11 +51,11 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
     plt.hlines(from_scratch, xmin=xmin, xmax=xmax, linewidth=0.5, color='black', linestyles='--', label='Train From Scratch')
     plt.yticks(list(plt.yticks()[0]) + [from_scratch])
 
-    plt.legend(title="Epsilon Iterations")
+    plt.legend(title="Epsilon Decay Steps")
     # plt.title("Training Hyperparameters Study")
     
     if target_column == "return":
-        ylabel = "Test Returns"
+        ylabel = "Returns"
     elif target_column == "train_length":
         ylabel = "Number of Episodes seen during Training"
     else:
@@ -72,8 +75,9 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
 # build_plot("LunarLander-v2", target_column="train_length")
 # build_plot("LunarLander-v2", target_column="return")
 #
-build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="return")
-build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="train_length")
+# build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="return")
+# build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="train_length")
+
+build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="return")
+build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="train_length")
 #
-# build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="return")
-# build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="train_length")

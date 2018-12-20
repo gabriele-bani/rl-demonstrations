@@ -62,7 +62,7 @@ discount_factor = 0.99
 
 splits_lst = [30]
 # splits_lst = [1, 5, 10, 15, 20]
-eps_lst = [10, 20]
+eps_lst = [20]
 # eps_lst = [1, 20, 50, 100]
 
 smoothing_num = 10
@@ -89,7 +89,7 @@ for i in range(num_datapoints):
     learn_rate, num_episodes, stop_coeff, final_eps, memory_size = parameters[env_name]
     
     # for index in [1, 4, 5]:
-    for index in [0, 1, 2]:
+    for index in [2]:
         row = data.iloc[index]
         for eps_it in eps_lst:
             for split in splits_lst:
