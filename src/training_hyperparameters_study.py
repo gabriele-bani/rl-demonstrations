@@ -8,6 +8,10 @@ import os
 
 # plt.xkcd()
 
+
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
 def build_plot(env_name, selection_conditions: Dict =None, target_column = "train_length"):
 
     w = 1
@@ -15,6 +19,8 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
     experiments = utils.load_experiments(env_name)
     
     experiments["return"] = experiments.returns.apply(lambda x: x[-1])
+    
+    print(experiments)
     
     from_scratch = experiments[experiments.demonstration_value.isnull()][target_column].mean()
     
@@ -43,9 +49,17 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
     plt.yticks(list(plt.yticks()[0]) + [from_scratch])
 
     plt.legend(title="Epsilon Iterations")
-    plt.title("Training Hyperparameters Study")
+    # plt.title("Training Hyperparameters Study")
+    
+    if target_column == "return":
+        ylabel = "Test Returns"
+    elif target_column == "train_length":
+        ylabel = "Number of Episodes seen during Training"
+    else:
+        ylabel = "UNKNOWN"
+    
     plt.xlabel("Number of Splits in Training")
-    plt.ylabel("Number of Episodes seen during Training")
+    plt.ylabel(ylabel)
     
     dir = utils.build_data_dir(env_name)
     outfile = os.path.join(dir, "{}_({})_hyperparams.svg".format(env_name, target_column))
@@ -55,8 +69,11 @@ def build_plot(env_name, selection_conditions: Dict =None, target_column = "trai
     plt.show()
 
 
+# build_plot("LunarLander", target_column="train_length")
+# build_plot("LunarLander", target_column="return")
+#
 build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="return")
 build_plot("Maze_(15,15,42,1.0,1.0)", {"demonstration_value": [-67]}, target_column="train_length")
-
-build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="return")
-build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="train_length")
+#
+# build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="return")
+# build_plot("MountainCar-v0", {"demonstration_value": [-87]}, target_column="train_length")

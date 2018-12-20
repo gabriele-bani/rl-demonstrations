@@ -66,6 +66,8 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
     # experiments = pd.DataFrame(experiments)
 
     experiments = utils.load_experiments(env_name)
+
+    print(experiments[["demonstration_value", "chunks", "eps_iterations"]])
     
     if selection_conditions is not None:
         for column, values in selection_conditions.items():
@@ -75,7 +77,7 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
     
     experiments["short"] = experiments.returns.apply(lambda x: x[-3:])
     # print(experiments[["demonstration_value", "seed", "train_length", "short"]])
-    # print(experiments[["demonstration_value", "chunks", "eps_iterations"]])
+    
 
     # for col in experiments:
     #     print(col)
@@ -161,5 +163,6 @@ def build_plot(env_name, selection_conditions: Dict =None, MAXx=None, MINy=None,
 
 # build_plot("Maze_(15,15,42,1.0,1.0)", {"chunks": [5, None], "eps_iterations": [10, None]}, MAXx=None, MINy=-1500, MAXy=0)
 #
-build_plot("MountainCar-v0", {"chunks": [15, None], "eps_iterations": [20, None]}, MAXx=600)
+# build_plot("MountainCar-v0", {"chunks": [15, None], "eps_iterations": [20, None]}, MAXx=600)
 
+build_plot("LunarLander", {"chunks": [30, None], "eps_iterations": [10, None]}, MAXx=600)
