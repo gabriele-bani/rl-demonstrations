@@ -4,7 +4,7 @@
 
 ## Description
 
-Poster and Code for the project in [Reinforcement Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoek-vak/vak/63460) of the MSc in Artificial Intelligence at the University of Amsterdam. Joint project of [Gabriele Bani](https://github.com/Hiryugan), [Andrii Skliar](github.com/askliar), [Gabriele Cesa](https://github.com/Gabri95) and [Davide Belli](https://github.com/davide-belli)
+Poster and Code for the project in [Reinforcement Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoek-vak/vak/63460) course of the MSc in Artificial Intelligence at the University of Amsterdam. Joint project of [Gabriele Bani](https://github.com/Hiryugan), [Andrii Skliar](github.com/askliar), [Gabriele Cesa](https://github.com/Gabri95) and [Davide Belli](https://github.com/davide-belli)
 	
 ## Main Idea
 
@@ -18,8 +18,12 @@ Basic **idea**: divide the trajectory in *n* splits. Train on the last one until
 
 ## Results
 
-![Results](https://cdn.pbrd.co/images/HT2ggjz.png)
-##### Figure: Returns over episodes in Maze (left), MounainCar (middle) and LunarLander (right).
+<p align="center">
+  <img src="https://cdn.pbrd.co/images/HT2ggjz.png"/><br />
+  <b>Figure:</b><i> Returns over episodes in Maze (left), MounainCar (middle) and LunarLander (right). </i>
+</p>
+
+##### 
 
 - Non optimal demonstrations can lead to optimal results, but better demonstrations lead to better learning and give more reliable 
 - In Maze, using bad demonstrations rather than suboptimal ones results in a better final policy because of a higher degree of exploration.
