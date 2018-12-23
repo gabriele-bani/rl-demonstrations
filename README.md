@@ -4,7 +4,7 @@
 
 ## Description
 
-Poster and Code for the project in [Reinforcement Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoek-vak/vak/63460) of the MSc in Artificial Intelligence at the University of Amsterdam. Joint project with [Gabriele Bani](https://github.com/Hiryugan), [Andrii Skliar](github.com/askliar), [Gabriele Cesa](https://github.com/Gabri95) and [Davide Belli](https://github.com/davide-belli)
+Poster and Code for the project in [Reinforcement Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoek-vak/vak/63460) of the MSc in Artificial Intelligence at the University of Amsterdam. Joint project of [Gabriele Bani](https://github.com/Hiryugan), [Andrii Skliar](github.com/askliar), [Gabriele Cesa](https://github.com/Gabri95) and [Davide Belli](https://github.com/davide-belli)
 	
 ## Main Idea
 
