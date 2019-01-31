@@ -29,3 +29,11 @@ Basic **idea**: divide the trajectory in *n* splits. Train on the last one until
 - In Maze, using bad demonstrations rather than suboptimal ones results in a better final policy because of a higher degree of exploration.
 - With more complex environments, we expect demonstrations to allow for a much faster training than training from scratch. 
 - The current implementation is very sensitive to hyperparameter choices; there is a need for a more automatic and reliable version of the backward algorithm to overcome this issue.
+
+## Copyright
+
+Copyright © 2018 Gabriele Bani.
+
+<p align=“justify”>
+This project is distributed under the <a href="LICENSE">MIT license</a>. This was developed as part of the Reinforcement Learning course taught by Herke van Hoof at the University of Amsterdam. Please follow the <a href="http://student.uva.nl/en/content/az/plagiarism-and-fraud/plagiarism-and-fraud.html">UvA regulations governing Fraud and Plagiarism</a> in case you are a student.
+</p>
