@@ -19,7 +19,7 @@ Basic **idea**: divide the trajectory in *n* splits. Train on the last one until
 ## Results
 
 <p align="center">
-  <img src="https://lh3.googleusercontent.com/hSxpIu3jzT1zvFF1zl7utrCFOvhLpbLfE6vOqIzZmtR5alThixhB5Cftw3B-e4YZgeSvo52G6K1IYOi7cVmsSSmTJdp-r_nx3adCexEGYKeeItyLbbOIkCwRsCo7VcM6acm0-Tp9wK0=w2400"/><br />
+  <img src="https://lh3.googleusercontent.com/l69yP6mcmr_rtU2mATaTSws2OeO0QKfhG7_G5C04qCv3H7GDkRWldzVq-12Its2JNZJSBmyq29FM5Ty6LB4iLb-N0FUmwQ_zchg7eZeUJT8d3UbLwmv5Hd5ONKEJP8I2v2efH0XMaPk=w2400"/><br />
   <b>Figure:</b><i> Returns over episodes in Maze (left), MounainCar (middle) and LunarLander (right). </i>
 </p>
 
